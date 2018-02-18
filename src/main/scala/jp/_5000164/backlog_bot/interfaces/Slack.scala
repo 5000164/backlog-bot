@@ -2,7 +2,7 @@ package jp._5000164.backlog_bot.interfaces
 
 import akka.actor.ActorSystem
 import jp._5000164.backlog_bot.domain.Message
-import slack.api.SlackApiClient
+import slack.api.BlockingSlackApiClient
 import slack.models.Attachment
 
 import scala.concurrent.ExecutionContextExecutor
@@ -12,9 +12,13 @@ class Slack {
   val postChannel = sys.env("SLACK_POST_CHANNEL")
   implicit val system: ActorSystem = ActorSystem("slack")
   implicit val ec: ExecutionContextExecutor = system.dispatcher
-  val client = SlackApiClient(token)
+  val client = BlockingSlackApiClient(token)
 
   def post(message: Message): Unit = {
-    client.postChatMessage(s"#$postChannel", "", attachments = Some(Seq(Attachment(text = Some(s"${message.content}\n\nupdated by ${message.updatedUser}")))))
+    client.postChatMessage(s"#$postChannel", "", attachments = Some(Seq(Attachment(
+      title = Some(message.title),
+      title_link = Some(message.link),
+      text = Some(s"${message.content.take(4000)}")
+    ))))
   }
 }

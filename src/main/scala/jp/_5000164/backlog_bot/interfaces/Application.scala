@@ -6,4 +6,6 @@ object Application extends App {
 
   val message = backlog.fetchComment
   slack.post(message)
+
+  slack.system.terminate
 }
