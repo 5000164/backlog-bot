@@ -1,7 +1,7 @@
 package jp._5000164.backlog_bot.interfaces
 
-import com.nulabinc.backlog4j.api.option.GetIssuesParams
 import com.nulabinc.backlog4j.conf.{BacklogConfigure, BacklogJpConfigure}
+import com.nulabinc.backlog4j.internal.json.activities.IssueUpdatedContent
 import com.nulabinc.backlog4j.{BacklogClient, BacklogClientFactory}
 import jp._5000164.backlog_bot.domain.Message
 
@@ -16,11 +16,9 @@ class Backlog {
 
   def fetchComment: Message = {
     val project = client.getProject(projectKey)
-    val issues = client.getIssues(new GetIssuesParams(List(project.getId).asJava))
-    val lastIssue = issues.asScala.head.getIdAsString
-    val comments = client.getIssueComments(lastIssue)
-    val comment = comments.asScala.head
+    val activities = client.getProjectActivities(project.getId)
+    val content = activities.asScala.head.getContent.asInstanceOf[IssueUpdatedContent]
 
-    Message(comment.getContent, comment.getCreatedUser.getName)
+    Message(content.getSummary, content.getComment.getContent, s"https://$spaceId.backlog.jp/view/$projectKey-${content.getKeyId}#comment-${content.getComment.getIdAsString}")
   }
 }
