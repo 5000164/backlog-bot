@@ -5,7 +5,9 @@ object Application extends App {
   val slack = new Slack
 
   val message = backlog.fetchComment
-  slack.post(message)
+  if (message.isDefined) {
+    slack.post(message.get)
+  }
 
   slack.system.terminate
 }

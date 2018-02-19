@@ -18,7 +18,7 @@ class Slack {
     client.postChatMessage(s"#$postChannel", "", attachments = Some(Seq(Attachment(
       title = Some(message.title),
       title_link = Some(message.link),
-      text = Some(s"${message.content.take(8000)}")
+      text = Some(s"${message.content.take(7900)}\n\nupdated by ${message.updatedUser}")
     ))))
   }
 }
