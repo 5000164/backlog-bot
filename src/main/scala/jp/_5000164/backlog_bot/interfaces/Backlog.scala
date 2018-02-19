@@ -24,7 +24,7 @@ class Backlog {
       Some(Message(
         BuildMessage.commentTitle(content.getSummary),
         BuildMessage.commentLink(spaceId, projectKey, content.getKeyId, comment.getId),
-        BuildMessage.commentText(content.getComment.getContent, comment.getCreatedUser.getName)
+        BuildMessage.commentText(content.getComment.getContent, comment.getCreatedUser.getName, comment.getCreated)
       ))
     } else {
       None
