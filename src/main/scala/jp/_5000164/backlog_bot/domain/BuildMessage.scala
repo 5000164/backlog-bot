@@ -7,7 +7,7 @@ object BuildMessage {
     s"https://$spaceId.backlog.jp/view/$projectKey-$issueId#comment-$commentId"
   }
 
-  def commentText(content: String, updatedUser: String): String = {
-    s"${content.take(7900)}\n\nupdated by $updatedUser"
+  def commentText(content: String, updatedUser: String, createdAt: java.util.Date): String = {
+    s"${content.take(7900)}\n\ncreated by $updatedUser\ncreated at ${"%tF %<tT" format createdAt}"
   }
 }
