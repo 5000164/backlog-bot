@@ -3,7 +3,7 @@ package jp._5000164.backlog_bot.interfaces
 import com.nulabinc.backlog4j.conf.{BacklogConfigure, BacklogJpConfigure}
 import com.nulabinc.backlog4j.internal.json.activities.IssueCommentedContent
 import com.nulabinc.backlog4j.{Activity, BacklogClient, BacklogClientFactory}
-import jp._5000164.backlog_bot.domain.Message
+import jp._5000164.backlog_bot.domain.{BuildMessage, Message}
 
 import scala.collection.JavaConverters._
 
@@ -21,7 +21,11 @@ class Backlog {
     if (activity.getType == Activity.Type.IssueCommented) {
       val content = activity.getContent.asInstanceOf[IssueCommentedContent]
       val comment = client.getIssueComment(content.getId, content.getComment.getId)
-      Some(Message(content.getSummary, content.getComment.getContent, comment.getCreatedUser.getName, s"https://$spaceId.backlog.jp/view/$projectKey-${content.getKeyId}#comment-${comment.getId}"))
+      Some(Message(
+        BuildMessage.commentTitle(content.getSummary),
+        BuildMessage.commentLink(spaceId, projectKey, content.getKeyId, comment.getId),
+        BuildMessage.commentText(content.getComment.getContent, comment.getCreatedUser.getName)
+      ))
     } else {
       None
     }
