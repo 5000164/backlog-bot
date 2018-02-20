@@ -22,9 +22,9 @@ class Backlog {
       val content = activity.getContent.asInstanceOf[IssueCommentedContent]
       val comment = client.getIssueComment(content.getId, content.getComment.getId)
       Some(Message(
-        BuildMessage.commentTitle(content.getSummary),
+        BuildMessage.commentTitle(content.getSummary, projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated),
         BuildMessage.commentLink(spaceId, projectKey, content.getKeyId, comment.getId),
-        BuildMessage.commentText(content.getComment.getContent, comment.getCreatedUser.getName, comment.getCreated)
+        BuildMessage.commentText(content.getComment.getContent)
       ))
     } else {
       None
