@@ -10,6 +10,6 @@ object BuildMessage {
   }
 
   def commentText(content: String): String = {
-    s"${content.take(8000)}"
+    if (content.length <= 8000) content else content.take(7997) + "..."
   }
 }
