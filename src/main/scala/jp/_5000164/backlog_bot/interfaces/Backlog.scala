@@ -23,7 +23,8 @@ class Backlog {
       val content = activity.getContent.asInstanceOf[IssueUpdatedContent]
       val comment = client.getIssueComment(content.getId, content.getComment.getId)
       Some(Message(
-        BuildMessage.updateTitle(content.getSummary, projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated),
+        BuildMessage.updatePretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated),
+        BuildMessage.updateTitle(content.getSummary),
         BuildMessage.updateLink(spaceId, projectKey, content.getKeyId, comment.getId),
         BuildMessage.updateText(content.getComment.getContent)
       ))
@@ -31,6 +32,7 @@ class Backlog {
       val content = activity.getContent.asInstanceOf[IssueCommentedContent]
       val comment = client.getIssueComment(content.getId, content.getComment.getId)
       Some(Message(
+        "",
         BuildMessage.commentTitle(content.getSummary, projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated),
         BuildMessage.commentLink(spaceId, projectKey, content.getKeyId, comment.getId),
         BuildMessage.commentText(content.getComment.getContent)
