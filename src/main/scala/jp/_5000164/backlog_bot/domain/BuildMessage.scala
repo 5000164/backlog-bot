@@ -1,9 +1,14 @@
 package jp._5000164.backlog_bot.domain
 
 object BuildMessage {
-  def updateTitle(title: String, projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date): String = {
-    s"[$projectKey-$issueId] $title のイシューを更新 $updatedUser ${"%tF %<tT" format createdAt}"
+  def updatePretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date): String = {
+    s"""イシューを更新
+       |対象イシュー: [$projectKey-$issueId]
+       |更新者: $updatedUser
+       |更新日: ${"%tF %<tT" format createdAt}""".stripMargin
   }
+
+  def updateTitle(title: String): String = title
 
   def updateLink(spaceId: String, projectKey: String, issueId: Long, commentId: Long): String = {
     s"https://$spaceId.backlog.jp/view/$projectKey-$issueId#comment-$commentId"
