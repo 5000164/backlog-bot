@@ -3,7 +3,7 @@ package jp._5000164.backlog_bot.domain
 object BuildMessage {
   def updatePretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date): String = {
     s"""イシューを更新
-       |対象イシュー: [$projectKey-$issueId]
+       |対象イシュー: $projectKey-$issueId
        |更新者: $updatedUser
        |更新日: ${"%tF %<tT" format createdAt}""".stripMargin
   }
