@@ -15,7 +15,7 @@ object BuildMessage {
   }
 
   def updateText(content: String): String = {
-    if (content.length <= 8000) content else content.take(7997) + "..."
+    if (content.length <= 4000) content else content.take(3997) + "..."
   }
 
   def commentTitle(title: String, projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date): String = {
@@ -27,6 +27,6 @@ object BuildMessage {
   }
 
   def commentText(content: String): String = {
-    if (content.length <= 8000) content else content.take(7997) + "..."
+    if (content.length <= 4000) content else content.take(3997) + "..."
   }
 }
