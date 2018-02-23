@@ -23,7 +23,7 @@ class Backlog {
       val content = activity.getContent.asInstanceOf[IssueUpdatedContent]
       val comment = client.getIssueComment(content.getId, content.getComment.getId)
       Some(Message(
-        BuildMessage.updatePretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated),
+        BuildMessage.updatePretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, comment.getChangeLog.asScala.toList),
         BuildMessage.updateTitle(content.getSummary),
         BuildMessage.updateLink(spaceId, projectKey, content.getKeyId, comment.getId),
         BuildMessage.updateText(content.getComment.getContent)

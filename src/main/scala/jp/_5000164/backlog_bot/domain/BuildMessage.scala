@@ -1,11 +1,15 @@
 package jp._5000164.backlog_bot.domain
 
+import com.nulabinc.backlog4j.ChangeLog
+
 object BuildMessage {
-  def updatePretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date): String = {
+  def updatePretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, changes: List[ChangeLog]): String = {
+    val changeLogMessage = changes.map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}").mkString("\n")
     s"""イシューを更新
        |対象イシュー: $projectKey-$issueId
        |更新者: $updatedUser
-       |更新日: ${"%tF %<tT" format createdAt}""".stripMargin
+       |更新日: ${"%tF %<tT" format createdAt}
+       |$changeLogMessage""".stripMargin
   }
 
   def updateTitle(title: String): String = title
