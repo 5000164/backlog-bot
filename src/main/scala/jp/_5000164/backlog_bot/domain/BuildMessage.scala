@@ -3,6 +3,24 @@ package jp._5000164.backlog_bot.domain
 import com.nulabinc.backlog4j.ChangeLog
 
 object BuildMessage {
+  def createPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, priority: String, assignee: String): String = {
+    s"""イシューを追加
+       |更新者: $updatedUser
+       |更新日: ${"%tF %<tT" format createdAt}
+       |優先度: $priority
+       |担当者: $assignee""".stripMargin
+  }
+
+  def createTitle(title: String): String = title
+
+  def createLink(spaceId: String, projectKey: String, issueId: Long): String = {
+    s"https://$spaceId.backlog.jp/view/$projectKey-$issueId"
+  }
+
+  def createText(content: String): String = {
+    if (content.length <= 4000) content else content.take(3997) + "..."
+  }
+
   def updatePretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, changes: List[ChangeLog]): String = {
     val changeLogMessage = changes.map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}").mkString("\n")
     s"""イシューを更新
