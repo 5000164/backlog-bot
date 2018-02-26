@@ -50,6 +50,6 @@ class Backlog {
       } else {
         None
       }
-    }).toList
+    }).toList.reverse
   }
 }
