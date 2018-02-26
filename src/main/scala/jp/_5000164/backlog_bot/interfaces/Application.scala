@@ -4,10 +4,9 @@ object Application extends App {
   val backlog = new Backlog
   val slack = new Slack
 
-  val message = backlog.fetchComment
-  if (message.isDefined) {
-    slack.post(message.get)
-  }
+  val lastExec = Recorder.getLastExec
+  val messages = backlog.fetchMessages(lastExec)
+  slack.post(messages)
 
   slack.system.terminate
 }
