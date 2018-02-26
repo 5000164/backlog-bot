@@ -14,12 +14,16 @@ class Slack {
   implicit val ec: ExecutionContextExecutor = system.dispatcher
   val client = BlockingSlackApiClient(token)
 
-  def post(message: Message): Unit = {
-    client.postChatMessage(s"#$postChannel", "", attachments = Some(Seq(Attachment(
-      title = Some(message.title),
-      title_link = Some(message.link),
-      text = Some(message.content),
-      pretext = Some(message.pretext)
-    ))))
+  def post(messages: List[Option[Message]]): Unit = {
+    messages.map {
+      case Some(message) =>
+        client.postChatMessage(s"#$postChannel", "", attachments = Some(Seq(Attachment(
+          title = Some(message.title),
+          title_link = Some(message.link),
+          text = Some(message.content),
+          pretext = Some(message.pretext)
+        ))))
+      case None =>
+    }
   }
 }
