@@ -16,10 +16,10 @@ class Backlog {
   val configure: BacklogConfigure = new BacklogJpConfigure(spaceId).apiKey(apiKey)
   val client: BacklogClient = new BacklogClientFactory(configure).newClient()
 
-  def fetchMessages(lastExec: Date): List[Option[Message]] = {
+  def fetchMessages(lastExecutedAt: Date): List[Option[Message]] = {
     val project = client.getProject(projectKey)
     val activities = client.getProjectActivities(project.getId)
-    activities.asScala.filter(_.getCreated after lastExec).map(activity => {
+    activities.asScala.filter(_.getCreated after lastExecutedAt).map(activity => {
       if (activity.getType == Activity.Type.IssueCreated) {
         val content = activity.getContent.asInstanceOf[IssueCreatedContent]
         val issue = client.getIssue(content.getId)
