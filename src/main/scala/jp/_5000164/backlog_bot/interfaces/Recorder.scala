@@ -8,7 +8,7 @@ import java.util.Date
 import scala.io.Source
 
 object Recorder {
-  def getLastExec: Date =
+  def getLastExecutedAt: Date =
     if (Files.notExists(Paths.get(".record"))) new Date
     else new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(Source.fromFile(".record").mkString)
 
