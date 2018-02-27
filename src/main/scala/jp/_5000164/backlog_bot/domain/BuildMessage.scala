@@ -22,7 +22,7 @@ object BuildMessage {
   }
 
   def updatePretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, changes: List[ChangeLog]): String = {
-    val changeLogMessage = changes.map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}").mkString("\n")
+    val changeLogMessage = changes.filter(_.getField != "description").map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}").mkString("\n")
     s"""イシューを更新
        |対象イシュー: $projectKey-$issueId
        |更新者: $updatedUser
