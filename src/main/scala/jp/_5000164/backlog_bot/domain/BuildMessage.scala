@@ -18,7 +18,7 @@ object BuildMessage {
   }
 
   def createText(content: String): String = {
-    if (content.length <= 4000) content else content.take(3997) + "..."
+    if (content.length <= 1000) content else content.take(997) + "..."
   }
 
   def updatePretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, changes: List[ChangeLog]): String = {
@@ -37,7 +37,7 @@ object BuildMessage {
   }
 
   def updateText(content: String): String = {
-    if (content.length <= 4000) content else content.take(3997) + "..."
+    if (content.length <= 1000) content else content.take(997) + "..."
   }
 
   def commentPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date): String = {
@@ -54,6 +54,6 @@ object BuildMessage {
   }
 
   def commentText(content: String): String = {
-    if (content.length <= 4000) content else content.take(3997) + "..."
+    if (content.length <= 1000) content else content.take(997) + "..."
   }
 }
