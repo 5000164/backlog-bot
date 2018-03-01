@@ -4,7 +4,8 @@ import com.nulabinc.backlog4j.ChangeLog
 
 object BuildMessage {
   def createPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, priority: String, assignee: String): String = {
-    s"""イシューを追加
+    s"""========================================
+       |:memo: 【イシューを追加】
        |更新者: $updatedUser
        |更新日: ${"%tF %<tT" format createdAt}
        |優先度: $priority
@@ -23,7 +24,8 @@ object BuildMessage {
 
   def updatePretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, changes: List[ChangeLog]): String = {
     val changeLogMessage = changes.filter(_.getField != "description").map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}").mkString("\n")
-    s"""イシューを更新
+    s"""========================================
+       |:memo: 【イシューを更新】
        |対象イシュー: $projectKey-$issueId
        |更新者: $updatedUser
        |更新日: ${"%tF %<tT" format createdAt}
@@ -41,7 +43,8 @@ object BuildMessage {
   }
 
   def commentPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date): String = {
-    s"""コメントを追加
+    s"""========================================
+       |:memo: 【コメントを追加】
        |対象イシュー: $projectKey-$issueId
        |更新者: $updatedUser
        |更新日: ${"%tF %<tT" format createdAt}""".stripMargin
