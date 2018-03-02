@@ -23,10 +23,7 @@ object BuildMessage {
   }
 
   def updatePretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, changes: List[ChangeLog]): String = {
-    val changeLogMessage = changes.map(change =>
-      if (change.getField == "description") s"description 追加: ${change.getNewValue diff change.getOriginalValue}\ndescription 削除: ${change.getOriginalValue diff change.getNewValue}"
-      else s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}"
-    ).mkString("\n")
+    val changeLogMessage = changes.filter(_.getField != "description").map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}").mkString("\n")
     s"""========================================
        |:memo: 【イシューを更新】
        |対象イシュー: $projectKey-$issueId
@@ -41,8 +38,16 @@ object BuildMessage {
     s"https://$spaceId.backlog.jp/view/$projectKey-$issueId#comment-$commentId"
   }
 
-  def updateText(content: String): String = {
-    if (content.length <= 1000) content else content.take(997) + "..."
+  def updateText(content: String, changes: List[ChangeLog]): String = {
+    val descriptionChange = changes.find(_.getField == "description")
+    if (descriptionChange.isDefined) {
+      val addDescription = descriptionChange.get.getNewValue diff descriptionChange.get.getOriginalValue
+      val removeDescription = descriptionChange.get.getOriginalValue diff descriptionChange.get.getNewValue
+      s"""description 追加: ${if (addDescription.length <= 300) addDescription else addDescription.take(297) + "..."}
+         |description 削除: ${if (removeDescription.length <= 300) removeDescription else removeDescription.take(297) + "..."}""".stripMargin
+    } else {
+      if (content.length <= 1000) content else content.take(997) + "..."
+    }
   }
 
   def commentPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date): String = {
