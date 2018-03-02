@@ -36,7 +36,7 @@ class Backlog {
           BuildMessage.updatePretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, comment.getChangeLog.asScala.toList),
           BuildMessage.updateTitle(content.getSummary),
           BuildMessage.updateLink(spaceId, projectKey, content.getKeyId, comment.getId),
-          BuildMessage.updateText(content.getComment.getContent)
+          BuildMessage.updateText(content.getComment.getContent, comment.getChangeLog.asScala.toList)
         ))
       } else if (activity.getType == Activity.Type.IssueCommented) {
         val content = activity.getContent.asInstanceOf[IssueCommentedContent]
