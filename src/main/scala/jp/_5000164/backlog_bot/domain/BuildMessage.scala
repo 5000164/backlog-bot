@@ -44,7 +44,8 @@ object BuildMessage {
       val addDescription = descriptionChange.get.getNewValue diff descriptionChange.get.getOriginalValue
       val removeDescription = descriptionChange.get.getOriginalValue diff descriptionChange.get.getNewValue
       s"""description 追加: ${if (addDescription.length <= 300) addDescription else addDescription.take(297) + "..."}
-         |description 削除: ${if (removeDescription.length <= 300) removeDescription else removeDescription.take(297) + "..."}""".stripMargin
+         |description 削除: ${if (removeDescription.length <= 300) removeDescription else removeDescription.take(297) + "..."}
+         |コメント: ${if (content.length <= 400) content else content.take(397) + "..."}""".stripMargin
     } else {
       if (content.length <= 1000) content else content.take(997) + "..."
     }
