@@ -6,6 +6,7 @@ object BuildMessage {
   def createPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, priority: String, assignee: String): String = {
     s"""========================================
        |:memo: 【イシューを追加】
+       |対象イシュー: $projectKey-$issueId
        |更新者: $updatedUser
        |更新日: ${"%tF %<tT" format createdAt}
        |優先度: $priority
