@@ -17,7 +17,7 @@ object Message {
     Message(
       createPretext(projectKey, content.getKeyId, activity.getCreatedUser.getName, activity.getCreated, issue.getPriority.getName, issue.getAssignee.getName),
       buildTitle(content.getSummary),
-      createLink(spaceId, projectKey, content.getKeyId),
+      buildLink(spaceId, projectKey, content.getKeyId, commentId = None),
       createText(content.getDescription)
     )
   }
@@ -26,7 +26,7 @@ object Message {
     Message(
       updatePretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, comment.getChangeLog.asScala.toList),
       buildTitle(content.getSummary),
-      updateLink(spaceId, projectKey, content.getKeyId, comment.getId),
+      buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
       updateText(content.getComment.getContent, comment.getChangeLog.asScala.toList)
     )
   }
@@ -35,12 +35,16 @@ object Message {
     Message(
       commentPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated),
       buildTitle(content.getSummary),
-      commentLink(spaceId, projectKey, content.getKeyId, comment.getId),
+      buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
       commentText(content.getComment.getContent)
     )
   }
 
   def buildTitle(title: String): String = title
+
+  def buildLink(spaceId: String, projectKey: String, issueId: Long, commentId: Option[Long]): String = {
+    s"https://$spaceId.backlog.jp/view/$projectKey-$issueId${if (commentId.isDefined) s"#comment-$commentId"}"
+  }
 
   def createPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, priority: String, assignee: String): String = {
     s"""========================================
@@ -50,10 +54,6 @@ object Message {
        |更新日: ${"%tF %<tT" format createdAt}
        |優先度: $priority
        |担当者: $assignee""".stripMargin
-  }
-
-  def createLink(spaceId: String, projectKey: String, issueId: Long): String = {
-    s"https://$spaceId.backlog.jp/view/$projectKey-$issueId"
   }
 
   def createText(content: String): String = {
@@ -68,10 +68,6 @@ object Message {
        |更新者: $updatedUser
        |更新日: ${"%tF %<tT" format createdAt}
        |$changeLogMessage""".stripMargin
-  }
-
-  def updateLink(spaceId: String, projectKey: String, issueId: Long, commentId: Long): String = {
-    s"https://$spaceId.backlog.jp/view/$projectKey-$issueId#comment-$commentId"
   }
 
   def updateText(content: String, changes: List[ChangeLog]): String = {
@@ -93,10 +89,6 @@ object Message {
        |対象イシュー: $projectKey-$issueId
        |更新者: $updatedUser
        |更新日: ${"%tF %<tT" format createdAt}""".stripMargin
-  }
-
-  def commentLink(spaceId: String, projectKey: String, issueId: Long, commentId: Long): String = {
-    s"https://$spaceId.backlog.jp/view/$projectKey-$issueId#comment-$commentId"
   }
 
   def commentText(content: String): String = {
