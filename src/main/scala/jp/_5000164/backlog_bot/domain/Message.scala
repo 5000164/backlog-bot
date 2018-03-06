@@ -16,7 +16,7 @@ object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCreatedContent, issue: Issue): Message = {
     Message(
       createPretext(projectKey, content.getKeyId, activity.getCreatedUser.getName, activity.getCreated, issue.getPriority.getName, issue.getAssignee.getName),
-      createTitle(content.getSummary),
+      buildTitle(content.getSummary),
       createLink(spaceId, projectKey, content.getKeyId),
       createText(content.getDescription)
     )
@@ -25,7 +25,7 @@ object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueUpdatedContent, comment: IssueComment): Message = {
     Message(
       updatePretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, comment.getChangeLog.asScala.toList),
-      updateTitle(content.getSummary),
+      buildTitle(content.getSummary),
       updateLink(spaceId, projectKey, content.getKeyId, comment.getId),
       updateText(content.getComment.getContent, comment.getChangeLog.asScala.toList)
     )
@@ -34,11 +34,13 @@ object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCommentedContent, comment: IssueComment): Message = {
     Message(
       commentPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated),
-      commentTitle(content.getSummary),
+      buildTitle(content.getSummary),
       commentLink(spaceId, projectKey, content.getKeyId, comment.getId),
       commentText(content.getComment.getContent)
     )
   }
+
+  def buildTitle(title: String): String = title
 
   def createPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, priority: String, assignee: String): String = {
     s"""========================================
@@ -49,8 +51,6 @@ object Message {
        |優先度: $priority
        |担当者: $assignee""".stripMargin
   }
-
-  def createTitle(title: String): String = title
 
   def createLink(spaceId: String, projectKey: String, issueId: Long): String = {
     s"https://$spaceId.backlog.jp/view/$projectKey-$issueId"
@@ -69,8 +69,6 @@ object Message {
        |更新日: ${"%tF %<tT" format createdAt}
        |$changeLogMessage""".stripMargin
   }
-
-  def updateTitle(title: String): String = title
 
   def updateLink(spaceId: String, projectKey: String, issueId: Long, commentId: Long): String = {
     s"https://$spaceId.backlog.jp/view/$projectKey-$issueId#comment-$commentId"
@@ -96,8 +94,6 @@ object Message {
        |更新者: $updatedUser
        |更新日: ${"%tF %<tT" format createdAt}""".stripMargin
   }
-
-  def commentTitle(title: String): String = title
 
   def commentLink(spaceId: String, projectKey: String, issueId: Long, commentId: Long): String = {
     s"https://$spaceId.backlog.jp/view/$projectKey-$issueId#comment-$commentId"
