@@ -56,9 +56,7 @@ object Message {
        |担当者: $assignee""".stripMargin
   }
 
-  def createText(content: String): String = {
-    if (content.length <= 1000) content else content.take(997) + "..."
-  }
+  def createText(content: String): String = packText(content, 1000)
 
   def updatePretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, changes: List[ChangeLog]): String = {
     val changeLogMessage = changes.filter(_.getField != "description").map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}").mkString("\n")
@@ -75,11 +73,11 @@ object Message {
     if (descriptionChange.isDefined) {
       val addDescription = descriptionChange.get.getNewValue diff descriptionChange.get.getOriginalValue
       val removeDescription = descriptionChange.get.getOriginalValue diff descriptionChange.get.getNewValue
-      s"""description 追加: ${if (addDescription.length <= 300) addDescription else addDescription.take(297) + "..."}
-         |description 削除: ${if (removeDescription.length <= 300) removeDescription else removeDescription.take(297) + "..."}
-         |コメント: ${if (content.length <= 400) content else content.take(397) + "..."}""".stripMargin
+      s"""description 追加: ${packText(addDescription, 300)}
+         |description 削除: ${packText(removeDescription, 300)}
+         |コメント: ${packText(content, 400)}""".stripMargin
     } else {
-      if (content.length <= 1000) content else content.take(997) + "..."
+      packText(content, 1000)
     }
   }
 
@@ -91,7 +89,7 @@ object Message {
        |更新日: ${"%tF %<tT" format createdAt}""".stripMargin
   }
 
-  def commentText(content: String): String = {
-    if (content.length <= 1000) content else content.take(997) + "..."
-  }
+  def commentText(content: String): String = packText(content, 1000)
+
+  def packText(raw: String, maxLength: Int): String = if (raw.length <= maxLength) raw else raw.take(maxLength - 3) + "..."
 }
