@@ -15,7 +15,7 @@ case class Message(
 object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCreatedContent, issue: Issue): Message = {
     Message(
-      createPretext(projectKey, content.getKeyId, activity.getCreatedUser.getName, activity.getCreated, issue.getPriority.getName, issue.getAssignee.getName),
+      buildPretext(projectKey, content.getKeyId, activity.getCreatedUser.getName, activity.getCreated, "イシューを追加", Some(List(s"優先度: ${issue.getPriority.getName}", s"担当者: ${issue.getAssignee.getName}"))),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, commentId = None),
       createText(content.getDescription)
@@ -23,8 +23,9 @@ object Message {
   }
 
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueUpdatedContent, comment: IssueComment): Message = {
+    val changeLogMessage = comment.getChangeLog.asScala.toList.filter(_.getField != "description").map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}")
     Message(
-      updatePretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, comment.getChangeLog.asScala.toList),
+      buildPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, "イシューを更新", Some(changeLogMessage)),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
       updateText(content.getComment.getContent, comment.getChangeLog.asScala.toList)
@@ -33,12 +34,19 @@ object Message {
 
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCommentedContent, comment: IssueComment): Message = {
     Message(
-      commentPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated),
+      buildPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, "コメントを追加", None),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
       commentText(content.getComment.getContent)
     )
   }
+
+  def buildPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, operation: String, metaInformation: Option[List[String]]): String =
+    s"""========================================
+       |:memo: 【$operation】
+       |対象イシュー: $projectKey-$issueId
+       |更新者: $updatedUser
+       |更新日: ${"%tF %<tT" format createdAt}${if (metaInformation.isDefined) "\n" + metaInformation.mkString("\n")}""".stripMargin
 
   def buildTitle(title: String): String = title
 
@@ -46,27 +54,7 @@ object Message {
     s"https://$spaceId.backlog.jp/view/$projectKey-$issueId${if (commentId.isDefined) s"#comment-$commentId"}"
   }
 
-  def createPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, priority: String, assignee: String): String = {
-    s"""========================================
-       |:memo: 【イシューを追加】
-       |対象イシュー: $projectKey-$issueId
-       |更新者: $updatedUser
-       |更新日: ${"%tF %<tT" format createdAt}
-       |優先度: $priority
-       |担当者: $assignee""".stripMargin
-  }
-
   def createText(content: String): String = packText(content, 1000)
-
-  def updatePretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, changes: List[ChangeLog]): String = {
-    val changeLogMessage = changes.filter(_.getField != "description").map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}").mkString("\n")
-    s"""========================================
-       |:memo: 【イシューを更新】
-       |対象イシュー: $projectKey-$issueId
-       |更新者: $updatedUser
-       |更新日: ${"%tF %<tT" format createdAt}
-       |$changeLogMessage""".stripMargin
-  }
 
   def updateText(content: String, changes: List[ChangeLog]): String = {
     val descriptionChange = changes.find(_.getField == "description")
@@ -79,14 +67,6 @@ object Message {
     } else {
       packText(content, 1000)
     }
-  }
-
-  def commentPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date): String = {
-    s"""========================================
-       |:memo: 【コメントを追加】
-       |対象イシュー: $projectKey-$issueId
-       |更新者: $updatedUser
-       |更新日: ${"%tF %<tT" format createdAt}""".stripMargin
   }
 
   def commentText(content: String): String = packText(content, 1000)
