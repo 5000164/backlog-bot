@@ -18,7 +18,7 @@ object Message {
       buildPretext(projectKey, content.getKeyId, activity.getCreatedUser.getName, activity.getCreated, "イシューを追加", Some(List(s"優先度: ${issue.getPriority.getName}", s"担当者: ${issue.getAssignee.getName}"))),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, commentId = None),
-      createText(content.getDescription)
+      buildText(content.getDescription, 1000)
     )
   }
 
@@ -37,7 +37,7 @@ object Message {
       buildPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, "コメントを追加", None),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
-      commentText(content.getComment.getContent)
+      buildText(content.getDescription, 1000)
     )
   }
 
@@ -52,7 +52,7 @@ object Message {
 
   def buildLink(spaceId: String, projectKey: String, issueId: Long, commentId: Option[Long]): String = s"https://$spaceId.backlog.jp/view/$projectKey-$issueId${if (commentId.isDefined) s"#comment-$commentId"}"
 
-  def createText(content: String): String = packText(content, 1000)
+  def buildText(content: String, maxLength: Int): String = packText(content, maxLength)
 
   def updateText(content: String, changes: List[ChangeLog]): String = {
     val descriptionChange = changes.find(_.getField == "description")
@@ -66,8 +66,6 @@ object Message {
       packText(content, 1000)
     }
   }
-
-  def commentText(content: String): String = packText(content, 1000)
 
   def packText(raw: String, maxLength: Int): String = if (raw.length <= maxLength) raw else raw.take(maxLength - 3) + "..."
 }
