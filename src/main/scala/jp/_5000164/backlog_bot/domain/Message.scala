@@ -24,11 +24,27 @@ object Message {
 
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueUpdatedContent, comment: IssueComment): Message = {
     val changeLogMessage = comment.getChangeLog.asScala.toList.filter(_.getField != "description").map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}")
+    val changes = comment.getChangeLog.asScala.toList
+    val descriptionChange = changes.find(_.getField == "description")
+    val text = if (descriptionChange.isDefined) {
+      val addDescription = calculateDiff(descriptionChange.get.getNewValue, descriptionChange.get.getOriginalValue, 300)
+      val removeDescription = calculateDiff(descriptionChange.get.getOriginalValue, descriptionChange.get.getNewValue, 300)
+      s"""```
+         |+ $addDescription
+         |```
+         |```
+         |- $removeDescription
+         |```
+         |
+         |${content.getComment.getContent}""".stripMargin
+    } else {
+      content.getComment.getContent
+    }
     Message(
       buildPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, "イシューを更新", Some(changeLogMessage)),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
-      updateText(content.getComment.getContent, comment.getChangeLog.asScala.toList)
+      buildText(text, 1000)
     )
   }
 
@@ -55,18 +71,7 @@ object Message {
 
   def buildText(content: String, maxLength: Int): String = packText(content, maxLength)
 
-  def updateText(content: String, changes: List[ChangeLog]): String = {
-    val descriptionChange = changes.find(_.getField == "description")
-    if (descriptionChange.isDefined) {
-      val addDescription = descriptionChange.get.getNewValue diff descriptionChange.get.getOriginalValue
-      val removeDescription = descriptionChange.get.getOriginalValue diff descriptionChange.get.getNewValue
-      s"""description 追加: ${packText(addDescription, 300)}
-         |description 削除: ${packText(removeDescription, 300)}
-         |コメント: ${packText(content, 400)}""".stripMargin
-    } else {
-      packText(content, 1000)
-    }
-  }
-
   def packText(raw: String, maxLength: Int): String = if (raw.length <= maxLength) raw else raw.take(maxLength - 3) + "..."
+
+  def calculateDiff(before: String, after: String, maxLength: Int): String = packText(before diff after, maxLength)
 }
