@@ -50,7 +50,8 @@ object Message {
 
   def buildTitle(title: String): String = title
 
-  def buildLink(spaceId: String, projectKey: String, issueId: Long, commentId: Option[Long]): String = s"https://$spaceId.backlog.jp/view/$projectKey-$issueId${if (commentId.isDefined) s"#comment-$commentId"}"
+  def buildLink(spaceId: String, projectKey: String, issueId: Long, commentId: Option[Long]): String =
+    s"https://$spaceId.backlog.jp/view/$projectKey-$issueId${if (commentId.isDefined) s"#comment-$commentId"}"
 
   def buildText(content: String, maxLength: Int): String = packText(content, maxLength)
 
