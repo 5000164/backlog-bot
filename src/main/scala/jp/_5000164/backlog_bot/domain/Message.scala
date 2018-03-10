@@ -14,8 +14,9 @@ case class Message(
 
 object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCreatedContent, issue: Issue): Message = {
+    val metaInformation = List(s"優先度: ${issue.getPriority.getName}", s"担当者: ${issue.getAssignee.getName}")
     Message(
-      buildPretext(projectKey, content.getKeyId, activity.getCreatedUser.getName, activity.getCreated, "イシューを追加", Some(List(s"優先度: ${issue.getPriority.getName}", s"担当者: ${issue.getAssignee.getName}"))),
+      buildPretext(projectKey, content.getKeyId, activity.getCreatedUser.getName, activity.getCreated, "イシューを追加", Some(metaInformation)),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, commentId = None),
       buildText(content.getDescription, 1000)
