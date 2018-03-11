@@ -7,8 +7,8 @@ object Application extends App {
   val slack = new Slack
 
   val lastExecutedAt = Recorder.getLastExecutedAt
-  val messages = backlog.fetchMessages(lastExecutedAt)
-  slack.post(messages)
+  val messageBundles = backlog.fetchMessages(lastExecutedAt)
+  slack.post(messageBundles)
   Recorder.record(new Date)
 
   slack.system.terminate
