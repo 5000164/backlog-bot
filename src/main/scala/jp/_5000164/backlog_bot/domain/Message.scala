@@ -63,12 +63,12 @@ object Message {
        |:memo: 【$operation】
        |対象イシュー: $projectKey-$issueId
        |更新者: $updatedUser
-       |更新日: ${"%tF %<tT" format createdAt}${if (metaInformation.isDefined) "\n" + metaInformation.mkString("\n")}""".stripMargin
+       |更新日: ${"%tF %<tT" format createdAt}${if (metaInformation.isDefined) "\n" + metaInformation.get.mkString("\n")}""".stripMargin
 
   def buildTitle(title: String): String = title
 
   def buildLink(spaceId: String, projectKey: String, issueId: Long, commentId: Option[Long]): String =
-    s"https://$spaceId.backlog.jp/view/$projectKey-$issueId${if (commentId.isDefined) s"#comment-$commentId"}"
+    s"https://$spaceId.backlog.jp/view/$projectKey-$issueId${if (commentId.isDefined) s"#comment-${commentId.get}"}"
 
   def buildText(content: String, maxLength: Int): String = packText(content, maxLength)
 
