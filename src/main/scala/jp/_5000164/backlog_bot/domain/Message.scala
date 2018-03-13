@@ -37,9 +37,9 @@ object Message {
          |- $removeDescription
          |```
          |
-         |${content.getComment.getContent}""".stripMargin
+         |${comment.getContent}""".stripMargin
     } else {
-      content.getComment.getContent
+      comment.getContent
     }
     Message(
       buildPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, "イシューを更新", Some(changeLogMessage)),
