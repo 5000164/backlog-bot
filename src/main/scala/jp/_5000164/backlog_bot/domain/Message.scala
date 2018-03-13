@@ -37,9 +37,9 @@ object Message {
          |- $removeDescription
          |```
          |
-         |${comment.getContent}""".stripMargin
+         |${Option(comment.getContent).getOrElse("")}""".stripMargin
     } else {
-      comment.getContent
+      Option(comment.getContent).getOrElse("")
     }
     Message(
       buildPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, "イシューを更新", Some(changeLogMessage)),
@@ -54,7 +54,7 @@ object Message {
       buildPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, "コメントを追加", None),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
-      buildText(comment.getContent, 1000)
+      buildText(Option(comment.getContent).getOrElse(""), 1000)
     )
   }
 
