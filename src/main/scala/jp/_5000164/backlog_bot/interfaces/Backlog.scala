@@ -25,17 +25,18 @@ class Backlog {
           case activity if activity.getType == Activity.Type.IssueCreated =>
             val content = activity.getContent.asInstanceOf[IssueCreatedContent]
             val issue = client.getIssue(content.getId)
-            Some(Message.build(spaceId, projectKey, activity, content, issue))
+            Message.build(spaceId, projectKey, activity, content, issue)
           case activity if activity.getType == Activity.Type.IssueUpdated =>
             val content = activity.getContent.asInstanceOf[IssueUpdatedContent]
             val comment = client.getIssueComment(content.getId, content.getComment.getId)
-            Some(Message.build(spaceId, projectKey, activity, content, comment))
+            Message.build(spaceId, projectKey, activity, content, comment)
           case activity if activity.getType == Activity.Type.IssueCommented =>
             val content = activity.getContent.asInstanceOf[IssueCommentedContent]
             val comment = client.getIssueComment(content.getId, content.getComment.getId)
-            Some(Message.build(spaceId, projectKey, activity, content, comment))
-          case _ => None
-        }.filter(_.isDefined).map(_.get).toList.reverse
+            Message.build(spaceId, projectKey, activity, content, comment)
+          case _ =>
+            Message(pretext = None, title = None, link = None, content = Some("対応していない操作です"))
+        }.toList.reverse
         MessageBundle(postChannel, messages)
     }
   }
