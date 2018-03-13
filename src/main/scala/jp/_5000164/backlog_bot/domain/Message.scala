@@ -54,7 +54,7 @@ object Message {
       buildPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, "コメントを追加", None),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
-      buildText(content.getDescription, 1000)
+      buildText(comment.getContent, 1000)
     )
   }
 
