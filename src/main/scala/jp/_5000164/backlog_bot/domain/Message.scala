@@ -6,10 +6,10 @@ import com.nulabinc.backlog4j.internal.json.activities.{IssueCommentedContent, I
 import scala.collection.JavaConverters._
 
 case class Message(
-                    pretext: String,
-                    title: String,
-                    link: String,
-                    content: String
+                    pretext: Option[String],
+                    title: Option[String],
+                    link: Option[String],
+                    content: Option[String]
                   )
 
 object Message {
@@ -58,19 +58,19 @@ object Message {
     )
   }
 
-  def buildPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, operation: String, metaInformation: Option[List[String]]): String =
-    s"""========================================
-       |:memo: 【$operation】
-       |対象イシュー: $projectKey-$issueId
-       |更新者: $updatedUser
-       |更新日: ${"%tF %<tT" format createdAt}${if (metaInformation.isDefined) "\n" + metaInformation.get.mkString("\n") else ""}""".stripMargin
+  def buildPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, operation: String, metaInformation: Option[List[String]]): Option[String] =
+    Some( s"""========================================
+             |:memo: 【$operation】
+             |対象イシュー: $projectKey-$issueId
+             |更新者: $updatedUser
+             |更新日: ${"%tF %<tT" format createdAt}${if (metaInformation.isDefined) "\n" + metaInformation.get.mkString("\n") else ""}""".stripMargin)
 
-  def buildTitle(title: String): String = title
+  def buildTitle(title: String): Option[String] = Some(title)
 
-  def buildLink(spaceId: String, projectKey: String, issueId: Long, commentId: Option[Long]): String =
-    s"https://$spaceId.backlog.jp/view/$projectKey-$issueId${if (commentId.isDefined) s"#comment-${commentId.get}" else ""}"
+  def buildLink(spaceId: String, projectKey: String, issueId: Long, commentId: Option[Long]): Option[String] =
+    Some(s"https://$spaceId.backlog.jp/view/$projectKey-$issueId${if (commentId.isDefined) s"#comment-${commentId.get}" else ""}")
 
-  def buildText(content: String, maxLength: Int): String = packText(content, maxLength)
+  def buildText(content: String, maxLength: Int): Option[String] = Some(packText(content, maxLength))
 
   def packText(raw: String, maxLength: Int): String = if (raw.length <= maxLength) raw else raw.take(maxLength - 3) + "..."
 
