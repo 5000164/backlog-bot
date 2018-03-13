@@ -1,3 +1,4 @@
 .idea/
 target/
 .record
+src/main/resources/Settings.scala
