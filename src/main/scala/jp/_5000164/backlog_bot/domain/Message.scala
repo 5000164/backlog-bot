@@ -17,7 +17,7 @@ object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCreatedContent, issue: Issue): Message = {
     val metaInformation = List(s"優先度: ${issue.getPriority.getName}", s"担当者: ${issue.getAssignee.getName}")
     Message(
-      buildPretext(projectKey, content.getKeyId, activity.getCreatedUser.getName, activity.getCreated, "イシューを追加", Some(metaInformation)),
+      buildPretext(activity.getCreatedUser.getName, activity.getCreated, s":heavy_plus_sign: $projectKey-${content.getKeyId} を追加", Some(metaInformation)),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, commentId = None),
       buildText(content.getDescription, 1000)
@@ -43,7 +43,7 @@ object Message {
       Option(comment.getContent).getOrElse("")
     }
     Message(
-      buildPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, "イシューを更新", Some(changeLogMessage)),
+      buildPretext(comment.getCreatedUser.getName, comment.getCreated, s":arrows_counterclockwise: $projectKey-${content.getKeyId} を更新", Some(changeLogMessage)),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
       buildText(text, 1000)
@@ -52,7 +52,7 @@ object Message {
 
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCommentedContent, comment: IssueComment): Message =
     Message(
-      buildPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, "コメントを追加", None),
+      buildPretext(comment.getCreatedUser.getName, comment.getCreated, s":speech_balloon: $projectKey-${content.getKeyId} にコメントを追加", None),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
       buildText(Option(comment.getContent).getOrElse(""), 1000)
@@ -60,13 +60,17 @@ object Message {
 
   def build(spaceId: String, projectKey: String, activity: Activity, content: GitPushedContent): Message = {
     val commits = content.getRevisions.toArray.toList.map(_.asInstanceOf[RevisionJSONImpl]).map(r => s"${r.getRev}: ${r.getComment}")
-    Message(pretext = None, title = None, link = None, content = Some(s"${content.getRepository.getName} リポジトリの ${content.getRef} にコミット\n${commits.mkString("\n")}"))
+    Message(
+      buildPretext(activity.getCreatedUser.getName, activity.getCreated, s":arrow_up: ${content.getRef} リポジトリへ push", None),
+      None,
+      None,
+      Some(s"${content.getRepository.getName} ${commits.mkString("\n")}")
+    )
   }
 
-  def buildPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, operation: String, metaInformation: Option[List[String]]): Option[String] =
+  def buildPretext(updatedUser: String, createdAt: java.util.Date, operation: String, metaInformation: Option[List[String]]): Option[String] =
     Some( s"""========================================
-             |:memo: 【$operation】
-             |対象イシュー: $projectKey-$issueId
+             |$operation
              |更新者: $updatedUser
              |更新日: ${"%tF %<tT" format createdAt}${if (metaInformation.isDefined) "\n" + metaInformation.get.mkString("\n") else ""}""".stripMargin)
 
