@@ -1,7 +1,8 @@
 package jp._5000164.backlog_bot.domain
 
 import com.nulabinc.backlog4j._
-import com.nulabinc.backlog4j.internal.json.activities.{IssueCommentedContent, IssueCreatedContent, IssueUpdatedContent}
+import com.nulabinc.backlog4j.internal.json.RevisionJSONImpl
+import com.nulabinc.backlog4j.internal.json.activities.{GitPushedContent, IssueCommentedContent, IssueCreatedContent, IssueUpdatedContent}
 
 import scala.collection.JavaConverters._
 
@@ -56,6 +57,11 @@ object Message {
       buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
       buildText(Option(comment.getContent).getOrElse(""), 1000)
     )
+
+  def build(spaceId: String, projectKey: String, activity: Activity, content: GitPushedContent): Message = {
+    val commits = content.getRevisions.toArray.toList.map(_.asInstanceOf[RevisionJSONImpl]).map(r => s"${r.getRev}: ${r.getComment}")
+    Message(pretext = None, title = None, link = None, content = Some(s"${content.getRepository.getName} リポジトリの ${content.getRef} にコミット\n${commits.mkString("\n")}"))
+  }
 
   def buildPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, operation: String, metaInformation: Option[List[String]]): Option[String] =
     Some( s"""========================================
