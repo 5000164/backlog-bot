@@ -3,7 +3,8 @@ package jp._5000164.backlog_bot.interfaces
 import java.util.Date
 
 import com.nulabinc.backlog4j.conf.{BacklogConfigure, BacklogJpConfigure}
-import com.nulabinc.backlog4j.internal.json.activities.{IssueCommentedContent, IssueCreatedContent, IssueUpdatedContent}
+import com.nulabinc.backlog4j.internal.json.RevisionJSONImpl
+import com.nulabinc.backlog4j.internal.json.activities._
 import com.nulabinc.backlog4j.{Activity, BacklogClient, BacklogClientFactory}
 import jp._5000164.backlog_bot.domain.{Message, MessageBundle}
 import jp._5000164.backlog_bot.infractructure.Settings
@@ -34,6 +35,10 @@ class Backlog {
             val content = activity.getContent.asInstanceOf[IssueCommentedContent]
             val comment = client.getIssueComment(content.getId, content.getComment.getId)
             Message.build(spaceId, projectKey, activity, content, comment)
+          case activity if activity.getType == Activity.Type.GitPushed =>
+            val content = activity.getContent.asInstanceOf[GitPushedContent]
+            val commits = content.getRevisions.toArray.toList.map(_.asInstanceOf[RevisionJSONImpl]).map(r => s"${r.getRev}: ${r.getComment}")
+            Message(pretext = None, title = None, link = None, content = Some(s"${content.getRepository.getName} リポジトリの ${content.getRef} にコミット\n${commits.mkString("\n")}"))
           case _ =>
             Message(pretext = None, title = None, link = None, content = Some("対応していない操作です"))
         }.toList.reverse
