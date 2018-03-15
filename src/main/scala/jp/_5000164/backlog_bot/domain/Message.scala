@@ -49,14 +49,13 @@ object Message {
     )
   }
 
-  def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCommentedContent, comment: IssueComment): Message = {
+  def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCommentedContent, comment: IssueComment): Message =
     Message(
       buildPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, "コメントを追加", None),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
       buildText(Option(comment.getContent).getOrElse(""), 1000)
     )
-  }
 
   def buildPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, operation: String, metaInformation: Option[List[String]]): Option[String] =
     Some( s"""========================================
