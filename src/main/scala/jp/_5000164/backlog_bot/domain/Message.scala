@@ -61,10 +61,10 @@ object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: GitPushedContent): Message = {
     val commits = content.getRevisions.toArray.toList.map(_.asInstanceOf[RevisionJSONImpl]).map(_.getComment)
     Message(
-      buildPretext(activity.getCreatedUser.getName, activity.getCreated, s":arrow_up: ${content.getRef} リポジトリへ push", None),
+      buildPretext(activity.getCreatedUser.getName, activity.getCreated, s":arrow_up: ${content.getRepository.getName}/${content.getRef} へ push", None),
       None,
       None,
-      Some(s"${content.getRepository.getName} ${commits.mkString("\n")}")
+      Some(commits.mkString("\n"))
     )
   }
 
