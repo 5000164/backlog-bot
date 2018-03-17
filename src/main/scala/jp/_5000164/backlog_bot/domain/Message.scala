@@ -11,7 +11,7 @@ case class Message(
                     pretext: Option[String],
                     title: Option[String],
                     link: Option[String],
-                    content: Option[String]
+                    text: Option[String]
                   )
 
 object Message {
