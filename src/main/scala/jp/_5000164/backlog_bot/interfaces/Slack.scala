@@ -22,7 +22,7 @@ class Slack {
           attachments = Some(Seq(Attachment(
             title = message.title,
             title_link = message.link,
-            text = message.content,
+            text = message.text,
             pretext = message.pretext
           ))))
       )
