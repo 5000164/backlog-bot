@@ -20,6 +20,7 @@ class Slack {
           s"#${messageBundle.postChannel}",
           "",
           attachments = Some(Seq(Attachment(
+            author_name = message.authorName,
             pretext = message.pretext,
             title = message.title,
             title_link = message.link,
