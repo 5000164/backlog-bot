@@ -37,7 +37,7 @@ class Backlog {
           case activity if activity.getType == Activity.Type.GitPushed =>
             None
           case _ =>
-            Some(Message(pretext = None, title = None, link = None, text = Some("対応していない操作です")))
+            Some(Message(authorName = None, pretext = None, title = None, link = None, text = Some("対応していない操作です")))
         }.toList.flatten.reverse
         MessageBundle(postChannel, messages)
     }

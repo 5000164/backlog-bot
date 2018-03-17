@@ -1,13 +1,12 @@
 package jp._5000164.backlog_bot.domain
 
-import java.text.SimpleDateFormat
-
 import com.nulabinc.backlog4j._
 import com.nulabinc.backlog4j.internal.json.activities.{IssueCommentedContent, IssueCreatedContent, IssueUpdatedContent}
 
 import scala.collection.JavaConverters._
 
 case class Message(
+                    authorName: Option[String],
                     pretext: Option[String],
                     title: Option[String],
                     link: Option[String],
@@ -18,7 +17,8 @@ object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCreatedContent, issue: Issue): Message = {
     val metaInformation = List(s"優先度: ${issue.getPriority.getName}", s"担当者: ${issue.getAssignee.getName}")
     Message(
-      buildPretext(activity.getCreatedUser.getName, activity.getCreated, s":heavy_plus_sign: $projectKey-${content.getKeyId} を追加", Some(metaInformation)),
+      buildAuthorName(activity.getCreatedUser.getName),
+      buildPretext(s":heavy_plus_sign: $projectKey-${content.getKeyId} を追加", Some(metaInformation)),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, commentId = None),
       buildText(content.getDescription, 1000)
@@ -44,7 +44,8 @@ object Message {
       Option(comment.getContent).getOrElse("")
     }
     Message(
-      buildPretext(comment.getCreatedUser.getName, comment.getCreated, s":arrows_counterclockwise: $projectKey-${content.getKeyId} を更新", Some(changeLogMessage)),
+      buildAuthorName(comment.getCreatedUser.getName),
+      buildPretext(s":arrows_counterclockwise: $projectKey-${content.getKeyId} を更新", Some(changeLogMessage)),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
       buildText(text, 1000)
@@ -53,17 +54,18 @@ object Message {
 
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCommentedContent, comment: IssueComment): Message =
     Message(
-      buildPretext(comment.getCreatedUser.getName, comment.getCreated, s":speech_balloon: $projectKey-${content.getKeyId} にコメントを追加", None),
+      buildAuthorName(comment.getCreatedUser.getName),
+      buildPretext(s":speech_balloon: $projectKey-${content.getKeyId} にコメントを追加", None),
       buildTitle(content.getSummary),
       buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
       buildText(Option(comment.getContent).getOrElse(""), 1000)
     )
 
-  def buildPretext(updatedUser: String, createdAt: java.util.Date, operation: String, metaInformation: Option[List[String]]): Option[String] =
+  def buildAuthorName(updatedUser: String): Option[String] = Some(updatedUser)
+
+  def buildPretext(operation: String, metaInformation: Option[List[String]]): Option[String] =
     Some( s"""========================================
-             |$operation
-             |更新者: $updatedUser
-             |更新日: ${new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(createdAt)}${if (metaInformation.isDefined) "\n" + metaInformation.get.mkString("\n") else ""}""".stripMargin)
+             |$operation""".stripMargin + (if (metaInformation.isDefined) "\n" + metaInformation.get.mkString("\n") else ""))
 
   def buildTitle(title: String): Option[String] = Some(title)
 
