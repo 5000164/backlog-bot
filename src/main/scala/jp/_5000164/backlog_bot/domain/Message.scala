@@ -1,5 +1,7 @@
 package jp._5000164.backlog_bot.domain
 
+import java.text.SimpleDateFormat
+
 import com.nulabinc.backlog4j._
 import com.nulabinc.backlog4j.internal.json.activities.{IssueCommentedContent, IssueCreatedContent, IssueUpdatedContent}
 
@@ -61,7 +63,7 @@ object Message {
     Some( s"""========================================
              |$operation
              |更新者: $updatedUser
-             |更新日: ${"%tF %<tT" format createdAt}${if (metaInformation.isDefined) "\n" + metaInformation.get.mkString("\n") else ""}""".stripMargin)
+             |更新日: ${new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(createdAt)}${if (metaInformation.isDefined) "\n" + metaInformation.get.mkString("\n") else ""}""".stripMargin)
 
   def buildTitle(title: String): Option[String] = Some(title)
 
