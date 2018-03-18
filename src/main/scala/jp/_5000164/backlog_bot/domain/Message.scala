@@ -1,7 +1,7 @@
 package jp._5000164.backlog_bot.domain
 
 import com.nulabinc.backlog4j._
-import com.nulabinc.backlog4j.internal.json.activities.{IssueCommentedContent, IssueCreatedContent, IssueUpdatedContent, PullRequestContent}
+import com.nulabinc.backlog4j.internal.json.activities._
 
 import scala.collection.JavaConverters._
 
@@ -61,6 +61,24 @@ object Message {
       buildText(Option(comment.getContent).getOrElse(""), 1000)
     )
 
+  def build(spaceId: String, projectKey: String, activity: Activity, content: WikiCreatedContent): Message =
+    Message(
+      buildAuthorName(activity.getCreatedUser.getName),
+      buildPretext(s":heavy_plus_sign: Wiki を追加", None),
+      buildTitle(content.getName),
+      buildWikiLink(spaceId, projectKey, content.getName, None),
+      buildText(Option(content.getContent).getOrElse(""), 1000)
+    )
+
+  def build(spaceId: String, projectKey: String, activity: Activity, content: WikiUpdatedContent): Message =
+    Message(
+      buildAuthorName(activity.getCreatedUser.getName),
+      buildPretext(s":arrows_counterclockwise: Wiki を更新", None),
+      buildTitle(content.getName),
+      buildWikiLink(spaceId, projectKey, content.getName, Some(content.getVersion)),
+      buildText(Option(content.getDiff).getOrElse(""), 1000)
+    )
+
   def build(spaceId: String, projectKey: String, activity: Activity, content: PullRequestContent, pullRequest: PullRequest): Message =
     Message(
       buildAuthorName(pullRequest.getCreatedUser.getName),
@@ -92,6 +110,9 @@ object Message {
 
   def buildIssueLink(spaceId: String, projectKey: String, issueId: Long, commentId: Option[Long]): Option[String] =
     Some(s"https://$spaceId.backlog.jp/view/$projectKey-$issueId${if (commentId.isDefined) s"#comment-${commentId.get}" else ""}")
+
+  def buildWikiLink(spaceId: String, projectKey: String, name: String, version: Option[Int]): Option[String] =
+    Some(s"https://$spaceId.backlog.jp/wiki/$projectKey/$name${if (version.isDefined) s"/diff/${version.get - 1}...${version.get}" else ""}")
 
   def buildPullRequestLink(spaceId: String, projectKey: String, repository: String, number: Long, commentId: Option[Long]): Option[String] =
     Some(s"https://$spaceId.backlog.jp/git/$projectKey/$repository/pullRequests/$number${if (commentId.isDefined) s"#comment-${commentId.get}" else ""}")

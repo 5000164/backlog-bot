@@ -35,6 +35,12 @@ class Backlog {
             val content = activity.getContent.asInstanceOf[IssueCommentedContent]
             val comment = client.getIssueComment(content.getId, content.getComment.getId)
             Some(Message.build(spaceId, projectKey, activity, content, comment))
+          case activity if activity.getType == Activity.Type.WikiCreated =>
+            val content = activity.getContent.asInstanceOf[WikiCreatedContent]
+            Some(Message.build(spaceId, projectKey, activity, content))
+          case activity if activity.getType == Activity.Type.WikiUpdated =>
+            val content = activity.getContent.asInstanceOf[WikiUpdatedContent]
+            Some(Message.build(spaceId, projectKey, activity, content))
           case activity if activity.getType == Activity.Type.GitPushed =>
             None
           case activity if activity.getType == Activity.Type.PullRequestAdded =>
