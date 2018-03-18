@@ -15,7 +15,7 @@ object Recorder {
   def record(executedAt: Date): Unit = {
     if (Files.notExists(Paths.get(".record"))) Files.createFile(Paths.get(".record"))
     val pw = new PrintWriter(".record")
-    pw.write("%tF %<tT" format executedAt)
+    pw.write(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(executedAt))
     pw.close()
   }
 }
