@@ -42,6 +42,7 @@ class Backlog {
             val content = activity.getContent.asInstanceOf[WikiUpdatedContent]
             Some(Message.build(spaceId, projectKey, activity, content))
           case activity if activity.getType == Activity.Type.GitPushed =>
+            // 実装の活動としてはプルリクエストとして観測するため push されたイベントには反応しないようにする
             None
           case activity if activity.getType == Activity.Type.PullRequestAdded =>
             val content = activity.getContent.asInstanceOf[PullRequestContent]
