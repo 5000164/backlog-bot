@@ -55,7 +55,7 @@ object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCommentedContent, comment: IssueComment): Message =
     Message(
       buildAuthorName(comment.getCreatedUser.getName),
-      buildPretext(s":speech_balloon: イシュー $projectKey-${content.getKeyId} にコメントを追加", None),
+      buildPretext(s":speech_balloon: イシュー $projectKey-${content.getKeyId} にコメントを追加", metaInformation = None),
       buildTitle(content.getSummary),
       buildIssueLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
       buildText(Option(comment.getContent).getOrElse(""), 1000)
@@ -64,16 +64,16 @@ object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: WikiCreatedContent): Message =
     Message(
       buildAuthorName(activity.getCreatedUser.getName),
-      buildPretext(s":heavy_plus_sign: Wiki を追加", None),
+      buildPretext(s":heavy_plus_sign: Wiki を追加", metaInformation = None),
       buildTitle(content.getName),
-      buildWikiLink(spaceId, projectKey, content.getName, None),
+      buildWikiLink(spaceId, projectKey, content.getName, version = None),
       buildText(Option(content.getContent).getOrElse(""), 1000)
     )
 
   def build(spaceId: String, projectKey: String, activity: Activity, content: WikiUpdatedContent): Message =
     Message(
       buildAuthorName(activity.getCreatedUser.getName),
-      buildPretext(s":arrows_counterclockwise: Wiki を更新", None),
+      buildPretext(s":arrows_counterclockwise: Wiki を更新", metaInformation = None),
       buildTitle(content.getName),
       buildWikiLink(spaceId, projectKey, content.getName, Some(content.getVersion)),
       buildText(Option(content.getDiff).getOrElse(""), 1000)
@@ -82,9 +82,9 @@ object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: PullRequestContent, pullRequest: PullRequest): Message =
     Message(
       buildAuthorName(pullRequest.getCreatedUser.getName),
-      buildPretext(s":heavy_plus_sign: プルリクエスト ${content.getRepository.getName}/${content.getNumber} を追加", None),
+      buildPretext(s":heavy_plus_sign: プルリクエスト ${content.getRepository.getName}/${content.getNumber} を追加", metaInformation = None),
       buildTitle(pullRequest.getSummary),
-      buildPullRequestLink(spaceId, projectKey, content.getRepository.getName, content.getNumber, None),
+      buildPullRequestLink(spaceId, projectKey, content.getRepository.getName, content.getNumber, commentId = None),
       buildText(Option(pullRequest.getDescription).getOrElse(""), 1000)
     )
 
