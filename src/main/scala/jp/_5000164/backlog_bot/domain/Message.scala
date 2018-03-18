@@ -1,31 +1,33 @@
 package jp._5000164.backlog_bot.domain
 
 import com.nulabinc.backlog4j._
-import com.nulabinc.backlog4j.internal.json.activities.{IssueCommentedContent, IssueCreatedContent, IssueUpdatedContent}
+import com.nulabinc.backlog4j.internal.json.activities._
 
 import scala.collection.JavaConverters._
 
 case class Message(
-                    pretext: String,
-                    title: String,
-                    link: String,
-                    content: String
+                    authorName: Option[String],
+                    pretext: Option[String],
+                    title: Option[String],
+                    link: Option[String],
+                    text: Option[String]
                   )
 
 object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCreatedContent, issue: Issue): Message = {
     val metaInformation = List(s"優先度: ${issue.getPriority.getName}", s"担当者: ${issue.getAssignee.getName}")
     Message(
-      buildPretext(projectKey, content.getKeyId, activity.getCreatedUser.getName, activity.getCreated, "イシューを追加", Some(metaInformation)),
+      buildAuthorName(activity.getCreatedUser.getName),
+      buildPretext(s":heavy_plus_sign: イシュー $projectKey-${content.getKeyId} を追加", Some(metaInformation)),
       buildTitle(content.getSummary),
-      buildLink(spaceId, projectKey, content.getKeyId, commentId = None),
+      buildIssueLink(spaceId, projectKey, content.getKeyId, commentId = None),
       buildText(content.getDescription, 1000)
     )
   }
 
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueUpdatedContent, comment: IssueComment): Message = {
-    val changeLogMessage = comment.getChangeLog.asScala.toList.filter(_.getField != "description").map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}")
     val changes = comment.getChangeLog.asScala.toList
+    val changeLogMessage = changes.filter(_.getField != "description").map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}")
     val descriptionChange = changes.find(_.getField == "description")
     val text = if (descriptionChange.isDefined) {
       val addDescription = calculateDiff(descriptionChange.get.getNewValue, descriptionChange.get.getOriginalValue, 300)
@@ -42,35 +44,80 @@ object Message {
       Option(comment.getContent).getOrElse("")
     }
     Message(
-      buildPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, "イシューを更新", Some(changeLogMessage)),
+      buildAuthorName(comment.getCreatedUser.getName),
+      buildPretext(s":arrows_counterclockwise: イシュー $projectKey-${content.getKeyId} を更新", Some(changeLogMessage)),
       buildTitle(content.getSummary),
-      buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
+      buildIssueLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
       buildText(text, 1000)
     )
   }
 
-  def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCommentedContent, comment: IssueComment): Message = {
+  def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCommentedContent, comment: IssueComment): Message =
     Message(
-      buildPretext(projectKey, content.getKeyId, comment.getCreatedUser.getName, comment.getCreated, "コメントを追加", None),
+      buildAuthorName(comment.getCreatedUser.getName),
+      buildPretext(s":speech_balloon: イシュー $projectKey-${content.getKeyId} にコメントを追加", metaInformation = None),
       buildTitle(content.getSummary),
-      buildLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
+      buildIssueLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
+      buildText(Option(comment.getContent).getOrElse(""), 1000)
+    )
+
+  def build(spaceId: String, projectKey: String, activity: Activity, content: WikiCreatedContent): Message =
+    Message(
+      buildAuthorName(activity.getCreatedUser.getName),
+      buildPretext(s":heavy_plus_sign: Wiki を追加", metaInformation = None),
+      buildTitle(content.getName),
+      buildWikiLink(spaceId, projectKey, content.getName, version = None),
+      buildText(Option(content.getContent).getOrElse(""), 1000)
+    )
+
+  def build(spaceId: String, projectKey: String, activity: Activity, content: WikiUpdatedContent): Message =
+    Message(
+      buildAuthorName(activity.getCreatedUser.getName),
+      buildPretext(s":arrows_counterclockwise: Wiki を更新", metaInformation = None),
+      buildTitle(content.getName),
+      buildWikiLink(spaceId, projectKey, content.getName, Some(content.getVersion)),
+      buildText(Option(content.getDiff).getOrElse(""), 1000)
+    )
+
+  def build(spaceId: String, projectKey: String, activity: Activity, content: PullRequestContent, pullRequest: PullRequest): Message =
+    Message(
+      buildAuthorName(pullRequest.getCreatedUser.getName),
+      buildPretext(s":heavy_plus_sign: プルリクエスト ${content.getRepository.getName}/${content.getNumber} を追加", metaInformation = None),
+      buildTitle(pullRequest.getSummary),
+      buildPullRequestLink(spaceId, projectKey, content.getRepository.getName, content.getNumber, commentId = None),
+      buildText(Option(pullRequest.getDescription).getOrElse(""), 1000)
+    )
+
+  def build(spaceId: String, projectKey: String, activity: Activity, content: PullRequestContent, comment: PullRequestComment): Message = {
+    val changes = comment.getChangeLog.asScala.toList
+    val changeLogMessage = changes.filter(_.getField != "description").map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}")
+    Message(
+      buildAuthorName(comment.getCreatedUser.getName),
+      buildPretext(s":speech_balloon: プルリクエスト ${content.getRepository.getName}/${content.getNumber} にコメントを追加", Some(changeLogMessage)),
+      buildTitle(content.getSummary),
+      buildPullRequestLink(spaceId, projectKey, content.getRepository.getName, content.getNumber, Some(comment.getId)),
       buildText(Option(comment.getContent).getOrElse(""), 1000)
     )
   }
 
-  def buildPretext(projectKey: String, issueId: Long, updatedUser: String, createdAt: java.util.Date, operation: String, metaInformation: Option[List[String]]): String =
-    s"""========================================
-       |:memo: 【$operation】
-       |対象イシュー: $projectKey-$issueId
-       |更新者: $updatedUser
-       |更新日: ${"%tF %<tT" format createdAt}${if (metaInformation.isDefined) "\n" + metaInformation.get.mkString("\n") else ""}""".stripMargin
+  def buildAuthorName(updatedUser: String): Option[String] = Some(updatedUser)
 
-  def buildTitle(title: String): String = title
+  def buildPretext(operation: String, metaInformation: Option[List[String]]): Option[String] =
+    Some( s"""========================================
+             |$operation""".stripMargin + (if (metaInformation.isDefined) "\n" + metaInformation.get.mkString("\n") else ""))
 
-  def buildLink(spaceId: String, projectKey: String, issueId: Long, commentId: Option[Long]): String =
-    s"https://$spaceId.backlog.jp/view/$projectKey-$issueId${if (commentId.isDefined) s"#comment-${commentId.get}" else ""}"
+  def buildTitle(title: String): Option[String] = Some(title)
 
-  def buildText(content: String, maxLength: Int): String = packText(content, maxLength)
+  def buildIssueLink(spaceId: String, projectKey: String, issueId: Long, commentId: Option[Long]): Option[String] =
+    Some(s"https://$spaceId.backlog.jp/view/$projectKey-$issueId${if (commentId.isDefined) s"#comment-${commentId.get}" else ""}")
+
+  def buildWikiLink(spaceId: String, projectKey: String, name: String, version: Option[Int]): Option[String] =
+    Some(s"https://$spaceId.backlog.jp/wiki/$projectKey/$name${if (version.isDefined) s"/diff/${version.get - 1}...${version.get}" else ""}")
+
+  def buildPullRequestLink(spaceId: String, projectKey: String, repository: String, number: Long, commentId: Option[Long]): Option[String] =
+    Some(s"https://$spaceId.backlog.jp/git/$projectKey/$repository/pullRequests/$number${if (commentId.isDefined) s"#comment-${commentId.get}" else ""}")
+
+  def buildText(content: String, maxLength: Int): Option[String] = Some(packText(content, maxLength))
 
   def packText(raw: String, maxLength: Int): String = if (raw.length <= maxLength) raw else raw.take(maxLength - 3) + "..."
 
