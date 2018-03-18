@@ -2,9 +2,10 @@ package jp._5000164.backlog_bot.interfaces
 
 import java.util.Date
 
+import com.nulabinc.backlog4j.api.option.QueryParams
 import com.nulabinc.backlog4j.conf.{BacklogConfigure, BacklogJpConfigure}
 import com.nulabinc.backlog4j.internal.json.activities._
-import com.nulabinc.backlog4j.{Activity, BacklogClient, BacklogClientFactory}
+import com.nulabinc.backlog4j.{Activity, BacklogClient, BacklogClientFactory, PullRequestComment}
 import jp._5000164.backlog_bot.domain.{Message, MessageBundle}
 import jp._5000164.backlog_bot.infractructure.Settings
 
@@ -36,6 +37,14 @@ class Backlog {
             Some(Message.build(spaceId, projectKey, activity, content, comment))
           case activity if activity.getType == Activity.Type.GitPushed =>
             None
+          case activity if activity.getType == Activity.Type.PullRequestAdded =>
+            val content = activity.getContent.asInstanceOf[PullRequestContent]
+            val pullRequest = client.getPullRequest(project.getId, content.getRepository.getId, content.getNumber)
+            Some(Message.build(spaceId, projectKey, activity, content, pullRequest))
+          case activity if activity.getType == Activity.Type.PullRequestUpdated =>
+            val content = activity.getContent.asInstanceOf[PullRequestContent]
+            val comment = client.getPullRequestComments(project.getId, content.getRepository.getId, content.getNumber, (new QueryParams).minId(content.getComment.getId - 1).maxId(content.getComment.getId + 1).count(1)).toArray.head.asInstanceOf[PullRequestComment]
+            Some(Message.build(spaceId, projectKey, activity, content, comment))
           case _ =>
             Some(Message(authorName = None, pretext = None, title = None, link = None, text = Some("対応していない操作です")))
         }.toList.flatten.reverse
