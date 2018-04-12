@@ -15,10 +15,13 @@ case class Message(
 
 object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCreatedContent, issue: Issue): Message = {
-    val metaInformation = List(s"優先度: ${issue.getPriority.getName}", s"担当者: ${issue.getAssignee.getName}")
+    val metaInformation = List(
+      if (issue.getPriority != null) Some(s"優先度: ${issue.getPriority.getName}") else None,
+      if (issue.getAssignee != null) Some(s"担当者: ${issue.getAssignee.getName}") else None
+    )
     Message(
       buildAuthorName(activity.getCreatedUser.getName),
-      buildPretext(s":heavy_plus_sign: イシュー $projectKey-${content.getKeyId} を追加", Some(metaInformation)),
+      buildPretext(s":heavy_plus_sign: イシュー $projectKey-${content.getKeyId} を追加", metaInformation),
       buildTitle(content.getSummary),
       buildIssueLink(spaceId, projectKey, content.getKeyId, commentId = None),
       buildText(content.getDescription, 1000)
@@ -27,7 +30,7 @@ object Message {
 
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueUpdatedContent, comment: IssueComment): Message = {
     val changes = comment.getChangeLog.asScala.toList
-    val changeLogMessage = changes.filter(_.getField != "description").map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}")
+    val changeLogMessage = changes.filter(_.getField != "description").map(change => Some(s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}"))
     val descriptionChange = changes.find(_.getField == "description")
     val text = if (descriptionChange.isDefined) {
       val addDescription = calculateDiff(descriptionChange.get.getNewValue, descriptionChange.get.getOriginalValue, 300)
@@ -45,7 +48,7 @@ object Message {
     }
     Message(
       buildAuthorName(comment.getCreatedUser.getName),
-      buildPretext(s":arrows_counterclockwise: イシュー $projectKey-${content.getKeyId} を更新", Some(changeLogMessage)),
+      buildPretext(s":arrows_counterclockwise: イシュー $projectKey-${content.getKeyId} を更新", changeLogMessage),
       buildTitle(content.getSummary),
       buildIssueLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
       buildText(text, 1000)
@@ -55,7 +58,7 @@ object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCommentedContent, comment: IssueComment): Message =
     Message(
       buildAuthorName(comment.getCreatedUser.getName),
-      buildPretext(s":speech_balloon: イシュー $projectKey-${content.getKeyId} にコメントを追加", metaInformation = None),
+      buildPretext(s":speech_balloon: イシュー $projectKey-${content.getKeyId} にコメントを追加", metaInformation = List()),
       buildTitle(content.getSummary),
       buildIssueLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
       buildText(Option(comment.getContent).getOrElse(""), 1000)
@@ -64,7 +67,7 @@ object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: WikiCreatedContent): Message =
     Message(
       buildAuthorName(activity.getCreatedUser.getName),
-      buildPretext(s":heavy_plus_sign: Wiki を追加", metaInformation = None),
+      buildPretext(s":heavy_plus_sign: Wiki を追加", metaInformation = List()),
       buildTitle(content.getName),
       buildWikiLink(spaceId, projectKey, content.getName, version = None),
       buildText(Option(content.getContent).getOrElse(""), 1000)
@@ -73,7 +76,7 @@ object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: WikiUpdatedContent): Message =
     Message(
       buildAuthorName(activity.getCreatedUser.getName),
-      buildPretext(s":arrows_counterclockwise: Wiki を更新", metaInformation = None),
+      buildPretext(s":arrows_counterclockwise: Wiki を更新", metaInformation = List()),
       buildTitle(content.getName),
       buildWikiLink(spaceId, projectKey, content.getName, Some(content.getVersion)),
       buildText(Option(content.getDiff).getOrElse(""), 1000)
@@ -82,7 +85,7 @@ object Message {
   def build(spaceId: String, projectKey: String, activity: Activity, content: PullRequestContent, pullRequest: PullRequest): Message =
     Message(
       buildAuthorName(pullRequest.getCreatedUser.getName),
-      buildPretext(s":heavy_plus_sign: プルリクエスト ${content.getRepository.getName}/${content.getNumber} を追加", metaInformation = None),
+      buildPretext(s":heavy_plus_sign: プルリクエスト ${content.getRepository.getName}/${content.getNumber} を追加", metaInformation = List()),
       buildTitle(pullRequest.getSummary),
       buildPullRequestLink(spaceId, projectKey, content.getRepository.getName, content.getNumber, commentId = None),
       buildText(Option(pullRequest.getDescription).getOrElse(""), 1000)
@@ -90,10 +93,10 @@ object Message {
 
   def build(spaceId: String, projectKey: String, activity: Activity, content: PullRequestContent, comment: PullRequestComment): Message = {
     val changes = comment.getChangeLog.asScala.toList
-    val changeLogMessage = changes.filter(_.getField != "description").map(change => s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}")
+    val changeLogMessage = changes.filter(_.getField != "description").map(change => Some(s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}"))
     Message(
       buildAuthorName(comment.getCreatedUser.getName),
-      buildPretext(s":speech_balloon: プルリクエスト ${content.getRepository.getName}/${content.getNumber} にコメントを追加", Some(changeLogMessage)),
+      buildPretext(s":speech_balloon: プルリクエスト ${content.getRepository.getName}/${content.getNumber} にコメントを追加", changeLogMessage),
       buildTitle(content.getSummary),
       buildPullRequestLink(spaceId, projectKey, content.getRepository.getName, content.getNumber, Some(comment.getId)),
       buildText(Option(comment.getContent).getOrElse(""), 1000)
@@ -102,9 +105,11 @@ object Message {
 
   def buildAuthorName(updatedUser: String): Option[String] = Some(updatedUser)
 
-  def buildPretext(operation: String, metaInformation: Option[List[String]]): Option[String] =
+  def buildPretext(operation: String, metaInformation: List[Option[String]]): Option[String] = {
+    val flatInformation = metaInformation.flatten
     Some( s"""========================================
-             |$operation""".stripMargin + (if (metaInformation.isDefined) "\n" + metaInformation.get.mkString("\n") else ""))
+             |$operation""".stripMargin + (if (flatInformation.nonEmpty) "\n" + flatInformation.mkString("\n") else ""))
+  }
 
   def buildTitle(title: String): Option[String] = Some(title)
 
