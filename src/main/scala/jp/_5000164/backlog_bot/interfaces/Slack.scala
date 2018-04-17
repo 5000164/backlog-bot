@@ -17,8 +17,8 @@ class Slack {
     messageBundles.foreach(messageBundle =>
       messageBundle.messages.foreach(message =>
         client.postChatMessage(
-          s"#${messageBundle.postChannel}",
-          "",
+          channelId = s"#${messageBundle.postChannel}",
+          text = "",
           attachments = Some(Seq(Attachment(
             author_name = message.authorName,
             pretext = message.pretext,
