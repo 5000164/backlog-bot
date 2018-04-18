@@ -14,6 +14,8 @@ case class Message(
                   )
 
 object Message {
+  val maxLength = 500
+
   def build(spaceId: String, projectKey: String, activity: Activity, content: IssueCreatedContent, issue: Issue): Message = {
     val metaInformation = List(
       if (issue.getPriority != null) Some(s"優先度: ${issue.getPriority.getName}") else None,
@@ -24,7 +26,7 @@ object Message {
       buildPretext(s":heavy_plus_sign: イシュー $projectKey-${content.getKeyId} を追加", metaInformation),
       buildTitle(content.getSummary),
       buildIssueLink(spaceId, projectKey, content.getKeyId, commentId = None),
-      buildText(content.getDescription, 1000)
+      buildText(content.getDescription, maxLength)
     )
   }
 
@@ -33,8 +35,8 @@ object Message {
     val changeLogMessage = changes.filter(_.getField != "description").map(change => Some(s"${change.getField}: ${change.getOriginalValue} -> ${change.getNewValue}"))
     val descriptionChange = changes.find(_.getField == "description")
     val text = if (descriptionChange.isDefined) {
-      val addDescription = calculateDiff(descriptionChange.get.getNewValue, descriptionChange.get.getOriginalValue, 300)
-      val removeDescription = calculateDiff(descriptionChange.get.getOriginalValue, descriptionChange.get.getNewValue, 300)
+      val addDescription = calculateDiff(descriptionChange.get.getNewValue, descriptionChange.get.getOriginalValue, maxLength / 2 - 20)
+      val removeDescription = calculateDiff(descriptionChange.get.getOriginalValue, descriptionChange.get.getNewValue, maxLength / 2 - 20)
       s"""```
          |+ $addDescription
          |```
@@ -51,7 +53,7 @@ object Message {
       buildPretext(s":arrows_counterclockwise: イシュー $projectKey-${content.getKeyId} を更新", changeLogMessage),
       buildTitle(content.getSummary),
       buildIssueLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
-      buildText(text, 1000)
+      buildText(text, maxLength)
     )
   }
 
@@ -61,7 +63,7 @@ object Message {
       buildPretext(s":speech_balloon: イシュー $projectKey-${content.getKeyId} にコメントを追加", metaInformation = List()),
       buildTitle(content.getSummary),
       buildIssueLink(spaceId, projectKey, content.getKeyId, Some(comment.getId)),
-      buildText(Option(comment.getContent).getOrElse(""), 1000)
+      buildText(Option(comment.getContent).getOrElse(""), maxLength)
     )
 
   def build(spaceId: String, projectKey: String, activity: Activity, content: WikiCreatedContent): Message =
@@ -70,7 +72,7 @@ object Message {
       buildPretext(s":heavy_plus_sign: Wiki を追加", metaInformation = List()),
       buildTitle(content.getName),
       buildWikiLink(spaceId, projectKey, content.getName, version = None),
-      buildText(Option(content.getContent).getOrElse(""), 1000)
+      buildText(Option(content.getContent).getOrElse(""), maxLength)
     )
 
   def build(spaceId: String, projectKey: String, activity: Activity, content: WikiUpdatedContent): Message =
@@ -79,7 +81,7 @@ object Message {
       buildPretext(s":arrows_counterclockwise: Wiki を更新", metaInformation = List()),
       buildTitle(content.getName),
       buildWikiLink(spaceId, projectKey, content.getName, Some(content.getVersion)),
-      buildText(Option(content.getDiff).getOrElse(""), 1000)
+      buildText(Option(content.getDiff).getOrElse(""), maxLength)
     )
 
   def build(spaceId: String, projectKey: String, activity: Activity, content: PullRequestContent, pullRequest: PullRequest): Message =
@@ -88,7 +90,7 @@ object Message {
       buildPretext(s":heavy_plus_sign: プルリクエスト ${content.getRepository.getName}/${content.getNumber} を追加", metaInformation = List()),
       buildTitle(pullRequest.getSummary),
       buildPullRequestLink(spaceId, projectKey, content.getRepository.getName, content.getNumber, commentId = None),
-      buildText(Option(pullRequest.getDescription).getOrElse(""), 1000)
+      buildText(Option(pullRequest.getDescription).getOrElse(""), maxLength)
     )
 
   def build(spaceId: String, projectKey: String, activity: Activity, content: PullRequestContent, comment: PullRequestComment): Message = {
@@ -99,7 +101,7 @@ object Message {
       buildPretext(s":speech_balloon: プルリクエスト ${content.getRepository.getName}/${content.getNumber} にコメントを追加", changeLogMessage),
       buildTitle(content.getSummary),
       buildPullRequestLink(spaceId, projectKey, content.getRepository.getName, content.getNumber, Some(comment.getId)),
-      buildText(Option(comment.getContent).getOrElse(""), 1000)
+      buildText(Option(comment.getContent).getOrElse(""), maxLength)
     )
   }
 
