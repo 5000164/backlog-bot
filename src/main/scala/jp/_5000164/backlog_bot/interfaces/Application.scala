@@ -2,6 +2,7 @@ package jp._5000164.backlog_bot.interfaces
 
 import java.util.Date
 
+import jp._5000164.backlog_bot.domain.Recorder
 import jp._5000164.backlog_bot.infractructure.Settings
 
 object Application extends App {
