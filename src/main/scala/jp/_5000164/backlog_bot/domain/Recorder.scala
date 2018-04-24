@@ -1,7 +1,9 @@
-package jp._5000164.backlog_bot.interfaces
+package jp._5000164.backlog_bot.domain
 
 import java.text.SimpleDateFormat
 import java.util.Date
+
+import jp._5000164.backlog_bot.interfaces.{Reader, Writer}
 
 object Recorder {
   def getLastExecutedAt(reader: Reader): Date =
