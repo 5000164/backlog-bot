@@ -5,6 +5,8 @@ import java.util.Date
 import jp._5000164.backlog_bot.infractructure.Settings
 
 object Application extends App {
+  val executedAt = new Date
+
   val backlog = new Backlog
   val slack = new Slack
 
@@ -12,7 +14,7 @@ object Application extends App {
   val mapping = Settings.settings.mapping
   val messageBundles = backlog.fetchMessages(lastExecutedAt, mapping)
   slack.post(messageBundles)
-  Recorder.record(new Date)
+  Recorder.record(executedAt)
 
   slack.system.terminate
 }
