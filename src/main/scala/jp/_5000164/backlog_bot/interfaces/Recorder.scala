@@ -1,21 +1,15 @@
 package jp._5000164.backlog_bot.interfaces
 
-import java.io.PrintWriter
-import java.nio.file.{Files, Paths}
 import java.text.SimpleDateFormat
 import java.util.Date
 
-import scala.io.Source
-
 object Recorder {
-  def getLastExecutedAt: Date =
-    if (Files.notExists(Paths.get(".record"))) new Date
-    else new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(Source.fromFile(".record").mkString)
+  def getLastExecutedAt(reader: Reader): Date =
+    reader.readRecord() match {
+      case Some(content) => new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(content)
+      case None => new Date
+    }
 
-  def record(executedAt: Date): Unit = {
-    if (Files.notExists(Paths.get(".record"))) Files.createFile(Paths.get(".record"))
-    val pw = new PrintWriter(".record")
-    pw.write(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(executedAt))
-    pw.close()
-  }
+  def record(executedAt: Date, writer: Writer): Unit =
+    writer.writeRecord(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(executedAt))
 }

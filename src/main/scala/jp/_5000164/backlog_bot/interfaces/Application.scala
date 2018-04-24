@@ -9,12 +9,14 @@ object Application extends App {
 
   val backlog = new Backlog
   val slack = new Slack
+  val reader = new Reader
+  val writer = new Writer
 
-  val lastExecutedAt = Recorder.getLastExecutedAt
+  val lastExecutedAt = Recorder.getLastExecutedAt(reader)
   val mapping = Settings.settings.mapping
   val messageBundles = backlog.fetchMessages(lastExecutedAt, mapping)
   slack.post(messageBundles)
-  Recorder.record(executedAt)
+  Recorder.record(executedAt, writer)
 
   slack.system.terminate
 }
