@@ -16,8 +16,11 @@ object Application extends App {
   val lastExecutedAt = Recorder.getLastExecutedAt(reader)
   val mapping = Settings.settings.mapping
   val messageBundles = backlog.fetchMessages(lastExecutedAt, mapping)
-  slack.post(messageBundles)
-  Recorder.record(executedAt, writer)
+
+  if (!args.contains("--dry-run")) {
+    slack.post(messageBundles)
+    Recorder.record(executedAt, writer)
+  }
 
   slack.system.terminate
 }
