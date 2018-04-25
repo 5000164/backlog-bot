@@ -8,6 +8,10 @@ import jp._5000164.backlog_bot.infractructure.Settings
 object Application extends App {
   val executedAt = new Date
 
+  val keyArgs = args.collect {
+    case "--dry-run" => "dry-run"
+  }.toSet
+
   val backlog = new Backlog
   val slack = new Slack
   val reader = new Reader
@@ -17,7 +21,7 @@ object Application extends App {
   val mapping = Settings.settings.mapping
   val messageBundles = backlog.fetchMessages(lastExecutedAt, mapping)
 
-  if (!args.contains("--dry-run")) {
+  if (!keyArgs.contains("dry-run")) {
     slack.post(messageBundles)
     Recorder.record(executedAt, writer)
   }
