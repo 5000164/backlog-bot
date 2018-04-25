@@ -1,5 +1,6 @@
 package jp._5000164.backlog_bot.interfaces
 
+import java.text.SimpleDateFormat
 import java.util.Date
 
 import jp._5000164.backlog_bot.domain.Recorder
@@ -11,13 +12,16 @@ object Application extends App {
   val keyArgs = args.collect {
     case "--dry-run" => "dry-run"
   }.toSet
+  val keyValueArgs = args.sliding(2).toList.collect {
+    case Array("--date", specifiedDate: String) => "date" -> Some(specifiedDate)
+  }.toMap
 
   val backlog = new Backlog
   val slack = new Slack
   val reader = new Reader
   val writer = new Writer
 
-  val lastExecutedAt = Recorder.getLastExecutedAt(reader)
+  val lastExecutedAt = keyValueArgs.getOrElse("date", None).map(date => new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date)).getOrElse(Recorder.getLastExecutedAt(reader))
   val mapping = Settings.settings.mapping
   val messageBundles = backlog.fetchMessages(lastExecutedAt, mapping)
 
