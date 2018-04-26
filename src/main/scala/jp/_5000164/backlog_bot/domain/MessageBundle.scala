@@ -4,5 +4,3 @@ case class MessageBundle(
                           postChannel: String,
                           messages: List[Message]
                         )
-
-
