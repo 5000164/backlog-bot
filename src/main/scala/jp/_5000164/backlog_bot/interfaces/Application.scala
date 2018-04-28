@@ -22,8 +22,8 @@ object Application extends App {
   val writer = new Writer
 
   val lastExecutedAt = keyValueArgs.getOrElse("date", None).map(date => new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date)).getOrElse(Recorder.getLastExecutedAt(reader))
-  val mapping = Settings.settings.mapping
-  val messageBundles = backlog.fetchMessages(lastExecutedAt, mapping)
+  val projects = Settings.settings.projects
+  val messageBundles = backlog.fetchMessages(lastExecutedAt, projects)
 
   if (!keyArgs.contains("dry-run")) {
     slack.post(messageBundles)
