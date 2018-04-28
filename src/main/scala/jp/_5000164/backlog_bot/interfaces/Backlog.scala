@@ -17,45 +17,97 @@ class Backlog {
   val configure: BacklogConfigure = new BacklogJpConfigure(spaceId).apiKey(apiKey)
   val client: BacklogClient = new BacklogClientFactory(configure).newClient()
 
-  def fetchMessages(lastExecutedAt: Date, mapping: Map[Settings.settings.ProjectKey, Settings.settings.PostChannel]): List[MessageBundle] = {
-    mapping.toList.map {
-      case (projectKey, postChannel) =>
+  def fetchMessages(lastExecutedAt: Date, projects: Settings.settings.Projects): Seq[MessageBundle] =
+    projects.keys.toSeq.flatMap(
+      projectKey => {
         val project = client.getProject(projectKey)
         val activities = client.getProjectActivities(project.getId)
-        val messages = activities.asScala.filter(_.getCreated after lastExecutedAt).map {
+
+        activities.asScala.filter(_.getCreated after lastExecutedAt).flatMap {
           case activity if activity.getType == Activity.Type.IssueCreated =>
             val content = activity.getContent.asInstanceOf[IssueCreatedContent]
             val issue = client.getIssue(content.getId)
-            Some(Message.build(spaceId, projectKey, activity, content, issue))
+
+            val postChannel = projects(projectKey).issue.postChannel
+            val message = Message.build(spaceId, projectKey, activity, content, issue)
+
+            Some(MessageBundle(postChannel, message))
+
           case activity if activity.getType == Activity.Type.IssueUpdated =>
             val content = activity.getContent.asInstanceOf[IssueUpdatedContent]
             val comment = client.getIssueComment(content.getId, content.getComment.getId)
-            Some(Message.build(spaceId, projectKey, activity, content, comment))
+
+            val postChannel = projects(projectKey).issue.postChannel
+            val message = Message.build(spaceId, projectKey, activity, content, comment)
+
+            Some(MessageBundle(postChannel, message))
+
           case activity if activity.getType == Activity.Type.IssueCommented =>
             val content = activity.getContent.asInstanceOf[IssueCommentedContent]
             val comment = client.getIssueComment(content.getId, content.getComment.getId)
-            Some(Message.build(spaceId, projectKey, activity, content, comment))
+
+            val postChannel = projects(projectKey).issue.postChannel
+            val message = Message.build(spaceId, projectKey, activity, content, comment)
+
+            Some(MessageBundle(postChannel, message))
+
           case activity if activity.getType == Activity.Type.WikiCreated =>
             val content = activity.getContent.asInstanceOf[WikiCreatedContent]
-            Some(Message.build(spaceId, projectKey, activity, content))
+
+            val postChannel = projects(projectKey).wiki.postChannel
+            val message = Message.build(spaceId, projectKey, activity, content)
+
+            Some(MessageBundle(postChannel, message))
+
           case activity if activity.getType == Activity.Type.WikiUpdated =>
             val content = activity.getContent.asInstanceOf[WikiUpdatedContent]
-            Some(Message.build(spaceId, projectKey, activity, content))
+
+            val postChannel = projects(projectKey).wiki.postChannel
+            val message = Message.build(spaceId, projectKey, activity, content)
+
+            Some(MessageBundle(postChannel, message))
+
           case activity if activity.getType == Activity.Type.GitPushed =>
-            // 実装の活動としてはプルリクエストとして観測するため push されたイベントには反応しないようにする
-            None
+            val content = activity.getContent.asInstanceOf[GitPushedContent]
+
+            projects(projectKey).repositories.get(content.getRepository.getName) match {
+              case Some(repository) =>
+                val postChannel = repository.postChannel
+                val message = Message.build(spaceId, projectKey, activity, content)
+
+                Some(MessageBundle(postChannel, message))
+              case None => None
+            }
+
           case activity if activity.getType == Activity.Type.PullRequestAdded =>
             val content = activity.getContent.asInstanceOf[PullRequestContent]
             val pullRequest = client.getPullRequest(project.getId, content.getRepository.getId, content.getNumber)
-            Some(Message.build(spaceId, projectKey, activity, content, pullRequest))
+
+            projects(projectKey).repositories.get(content.getRepository.getName) match {
+              case Some(repository) =>
+                val postChannel = repository.postChannel
+                val message = Message.build(spaceId, projectKey, activity, content, pullRequest)
+
+                Some(MessageBundle(postChannel, message))
+              case None => None
+            }
+
           case activity if activity.getType == Activity.Type.PullRequestUpdated =>
             val content = activity.getContent.asInstanceOf[PullRequestContent]
             val comment = client.getPullRequestComments(project.getId, content.getRepository.getId, content.getNumber, (new QueryParams).minId(content.getComment.getId - 1).maxId(content.getComment.getId + 1).count(1)).toArray.head.asInstanceOf[PullRequestComment]
-            Some(Message.build(spaceId, projectKey, activity, content, comment))
+
+            projects(projectKey).repositories.get(content.getRepository.getName) match {
+              case Some(repository) =>
+                val postChannel = repository.postChannel
+                val message = Message.build(spaceId, projectKey, activity, content, comment)
+
+                Some(MessageBundle(postChannel, message))
+              case None => None
+            }
+
           case _ =>
-            Some(Message(authorName = None, pretext = None, title = None, link = None, text = Some("対応していない操作です")))
-        }.toList.flatten.reverse
-        MessageBundle(postChannel, messages)
-    }
-  }
+            None
+        }
+      }
+    )
 }
