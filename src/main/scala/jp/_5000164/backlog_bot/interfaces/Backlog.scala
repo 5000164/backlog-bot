@@ -73,9 +73,9 @@ class Backlog {
             projects(projectKey).repositories.get(content.getRepository.getName) match {
               case Some(repository) =>
                 val postChannel = repository.postChannel
-                val message = "git pushed"
+                val message = Message.build(spaceId, projectKey, activity, content)
 
-                Some(MessageBundle(postChannel, Message(None, None, None, None, Some(message))))
+                Some(MessageBundle(postChannel, message))
               case None => None
             }
 
