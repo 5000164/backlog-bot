@@ -84,6 +84,19 @@ object Message {
       buildText(Option(content.getDiff).getOrElse(""), maxLength)
     )
 
+  def build(spaceId: String, projectKey: String, activity: Activity, content: GitPushedContent): Message = {
+    val branchName = content.getRef.drop(11)
+    val commitLog = content.getRevisions.asScala.map(_.getComment).mkString("\n")
+
+    Message(
+      buildAuthorName(activity.getCreatedUser.getName),
+      buildPretext(":git: git push", metaInformation = List()),
+      buildTitle(s"${content.getRepository.getName}/$branchName"),
+      buildBranchLink(spaceId, projectKey, content.getRepository.getName, branchName),
+      buildText(commitLog, maxLength)
+    )
+  }
+
   def build(spaceId: String, projectKey: String, activity: Activity, content: PullRequestContent, pullRequest: PullRequest): Message =
     Message(
       buildAuthorName(pullRequest.getCreatedUser.getName),
@@ -120,6 +133,9 @@ object Message {
 
   def buildWikiLink(spaceId: String, projectKey: String, name: String, version: Option[Int]): Option[String] =
     Some(s"https://$spaceId.backlog.jp/wiki/$projectKey/$name${if (version.isDefined) s"/diff/${version.get - 1}...${version.get}" else ""}")
+
+  def buildBranchLink(spaceId: String, projectKey: String, repository: String, branch: String): Option[String] =
+    Some(s"https://$spaceId.backlog.jp/git/$projectKey/$repository/tree/$branch")
 
   def buildPullRequestLink(spaceId: String, projectKey: String, repository: String, number: Long, commentId: Option[Long]): Option[String] =
     Some(s"https://$spaceId.backlog.jp/git/$projectKey/$repository/pullRequests/$number${if (commentId.isDefined) s"#comment-${commentId.get}" else ""}")
