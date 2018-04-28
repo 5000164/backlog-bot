@@ -135,7 +135,7 @@ object Message {
     Some(s"https://$spaceId.backlog.jp/wiki/$projectKey/$name${if (version.isDefined) s"/diff/${version.get - 1}...${version.get}" else ""}")
 
   def buildBranchLink(spaceId: String, projectKey: String, repository: String, branch: String): Option[String] =
-    Some(s"https://$spaceId.backlog.jp/git/$projectKey/$repository/tree/$branch")
+    Some(s"https://$spaceId.backlog.jp/git/$projectKey/$repository/history/$branch")
 
   def buildPullRequestLink(spaceId: String, projectKey: String, repository: String, number: Long, commentId: Option[Long]): Option[String] =
     Some(s"https://$spaceId.backlog.jp/git/$projectKey/$repository/pullRequests/$number${if (commentId.isDefined) s"#comment-${commentId.get}" else ""}")
