@@ -15,21 +15,19 @@ class Slack {
   implicit val ec: ExecutionContextExecutor = system.dispatcher
   val client = BlockingSlackApiClient(token)
 
-  def post(messageBundles: List[MessageBundle]): Unit =
+  def post(messageBundles: Seq[MessageBundle]): Unit =
     messageBundles.foreach(messageBundle =>
-      messageBundle.messages.foreach(message =>
-        client.postChatMessage(
-          channelId = s"#${messageBundle.postChannel}",
-          text = "",
-          username = Some(username),
-          iconEmoji = Some(iconEmoji),
-          attachments = Some(Seq(Attachment(
-            author_name = message.authorName,
-            pretext = message.pretext,
-            title = message.title,
-            title_link = message.link,
-            text = message.text
-          ))))
-      )
+      client.postChatMessage(
+        channelId = s"#${messageBundle.postChannel}",
+        text = "",
+        username = Some(username),
+        iconEmoji = Some(iconEmoji),
+        attachments = Some(Seq(Attachment(
+          author_name = messageBundle.message.authorName,
+          pretext = messageBundle.message.pretext,
+          title = messageBundle.message.title,
+          title_link = messageBundle.message.link,
+          text = messageBundle.message.text
+        ))))
     )
 }
