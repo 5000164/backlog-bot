@@ -21,19 +21,19 @@ trait SettingsType {
 }
 
 case class Project(
-                    issue: Issue,
-                    wiki: Wiki,
-                    repositories: Map[RepositoryName, Repository]
-                  )
+    issue: Issue,
+    wiki: Wiki,
+    repositories: Map[RepositoryName, Repository]
+)
 
 case class Issue(
-                  postChannel: String
-                )
+    postChannel: String
+)
 
 case class Wiki(
-                 postChannel: String
-               )
+    postChannel: String
+)
 
 case class Repository(
-                       postChannel: String
-                     )
+    postChannel: String
+)
