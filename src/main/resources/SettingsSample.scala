@@ -5,11 +5,5 @@ new SettingsType {
     "PROJECT_KEY" -> Project(
       issue = Issue(postChannel = "post_channel"),
       wiki = Wiki(postChannel = "post_channel"),
-      repositories = Map(
-        "RepositoryName" -> Repository(
-          postChannel = "post_channel"
-        )
-      )
-    )
-  )
+      repositories = Map("RepositoryName" -> Repository(postChannel = "post_channel"))))
 }
