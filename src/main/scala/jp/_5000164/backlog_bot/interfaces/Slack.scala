@@ -30,4 +30,18 @@ class Slack {
           text = messageBundle.message.text
         ))))
     )
+
+  /**
+    * 実行ログを残す
+    *
+    * @param channelId ログを残すチャンネル
+    * @param count     更新した件数
+    */
+  def log(channelId: String, count: Int): Unit = {
+    client.postChatMessage(
+      channelId = channelId,
+      text = s"$count 件更新",
+      username = Some(username),
+      iconEmoji = Some(iconEmoji))
+  }
 }

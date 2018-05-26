@@ -2,12 +2,12 @@ package jp._5000164.backlog_bot.interfaces
 
 import java.util.Date
 
+import com.nulabinc.backlog4j._
 import com.nulabinc.backlog4j.api.option.QueryParams
 import com.nulabinc.backlog4j.conf.{BacklogConfigure, BacklogJpConfigure}
 import com.nulabinc.backlog4j.internal.json.activities._
-import com.nulabinc.backlog4j.{Activity, BacklogClient, BacklogClientFactory, PullRequestComment}
 import jp._5000164.backlog_bot.domain.{Message, MessageBundle}
-import jp._5000164.backlog_bot.infractructure.Settings
+import jp._5000164.backlog_bot.infrastructure.Settings
 
 import scala.collection.JavaConverters._
 
@@ -26,12 +26,16 @@ class Backlog {
         activities.asScala.filter(_.getCreated after lastExecutedAt).flatMap {
           case activity if activity.getType == Activity.Type.IssueCreated =>
             val content = activity.getContent.asInstanceOf[IssueCreatedContent]
-            val issue = client.getIssue(content.getId)
+            try {
+              val issue = client.getIssue(content.getId)
 
-            val postChannel = projects(projectKey).issue.postChannel
-            val message = Message.build(spaceId, projectKey, activity, content, issue)
+              val postChannel = projects(projectKey).issue.postChannel
+              val message = Message.build(spaceId, projectKey, activity, content, issue)
 
-            Some(MessageBundle(postChannel, message))
+              Some(MessageBundle(postChannel, message))
+            } catch {
+              case _: BacklogException => None
+            }
 
           case activity if activity.getType == Activity.Type.IssueUpdated =>
             val content = activity.getContent.asInstanceOf[IssueUpdatedContent]
@@ -109,5 +113,5 @@ class Backlog {
             None
         }
       }
-    )
+    ).reverse
 }
