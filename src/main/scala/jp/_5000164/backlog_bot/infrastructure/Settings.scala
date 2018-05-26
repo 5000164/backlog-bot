@@ -1,6 +1,6 @@
-package jp._5000164.backlog_bot.infractructure
+package jp._5000164.backlog_bot.infrastructure
 
-import jp._5000164.backlog_bot.infractructure.Settings.{ProjectKey, RepositoryName}
+import jp._5000164.backlog_bot.infrastructure.Settings.{ProjectKey, RepositoryName}
 
 import scala.io.Source
 import scala.reflect.runtime.{currentMirror, universe}
@@ -18,22 +18,23 @@ object Settings {
 trait SettingsType {
   type Projects = Map[ProjectKey, Project]
   val projects: Projects
+  val logChannelId: String
 }
 
 case class Project(
-                    issue: Issue,
-                    wiki: Wiki,
-                    repositories: Map[RepositoryName, Repository]
-                  )
+    issue: Issue,
+    wiki: Wiki,
+    repositories: Map[RepositoryName, Repository]
+)
 
 case class Issue(
-                  postChannel: String
-                )
+    postChannel: String
+)
 
 case class Wiki(
-                 postChannel: String
-               )
+    postChannel: String
+)
 
 case class Repository(
-                       postChannel: String
-                     )
+    postChannel: String
+)
