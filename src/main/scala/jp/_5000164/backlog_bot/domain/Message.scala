@@ -6,12 +6,12 @@ import com.nulabinc.backlog4j.internal.json.activities._
 import scala.collection.JavaConverters._
 
 case class Message(
-                    authorName: Option[String],
-                    pretext: Option[String],
-                    title: Option[String],
-                    link: Option[String],
-                    text: Option[String]
-                  )
+    authorName: Option[String],
+    pretext: Option[String],
+    title: Option[String],
+    link: Option[String],
+    text: Option[String]
+)
 
 object Message {
   val maxLength = 500
