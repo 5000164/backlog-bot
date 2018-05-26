@@ -6,4 +6,5 @@ new SettingsType {
       issue = Issue(postChannel = "post_channel"),
       wiki = Wiki(postChannel = "post_channel"),
       repositories = Map("RepositoryName" -> Repository(postChannel = "post_channel"))))
+  val logChannelId = "log_channel_id"
 }
