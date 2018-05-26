@@ -113,5 +113,5 @@ class Backlog {
             None
         }
       }
-    )
+    ).reverse
 }
