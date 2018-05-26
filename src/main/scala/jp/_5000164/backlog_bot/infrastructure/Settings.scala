@@ -1,6 +1,6 @@
-package jp._5000164.backlog_bot.infractructure
+package jp._5000164.backlog_bot.infrastructure
 
-import jp._5000164.backlog_bot.infractructure.Settings.{ProjectKey, RepositoryName}
+import jp._5000164.backlog_bot.infrastructure.Settings.{ProjectKey, RepositoryName}
 
 import scala.io.Source
 import scala.reflect.runtime.{currentMirror, universe}

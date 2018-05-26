@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 import jp._5000164.backlog_bot.domain.Recorder
-import jp._5000164.backlog_bot.infractructure.Settings
+import jp._5000164.backlog_bot.infrastructure.Settings
 
 object Application extends App {
   val executedAt = new Date

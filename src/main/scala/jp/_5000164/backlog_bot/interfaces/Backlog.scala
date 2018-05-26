@@ -7,7 +7,7 @@ import com.nulabinc.backlog4j.api.option.QueryParams
 import com.nulabinc.backlog4j.conf.{BacklogConfigure, BacklogJpConfigure}
 import com.nulabinc.backlog4j.internal.json.activities._
 import jp._5000164.backlog_bot.domain.{Message, MessageBundle}
-import jp._5000164.backlog_bot.infractructure.Settings
+import jp._5000164.backlog_bot.infrastructure.Settings
 
 import scala.collection.JavaConverters._
 
