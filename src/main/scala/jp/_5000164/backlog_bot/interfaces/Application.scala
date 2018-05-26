@@ -28,6 +28,7 @@ object Application extends App {
   if (!keyArgs.contains("dry-run")) {
     slack.post(messageBundles)
     Recorder.record(executedAt, writer)
+    slack.log(Settings.settings.logChannelId, messageBundles.length)
   }
 
   slack.system.terminate

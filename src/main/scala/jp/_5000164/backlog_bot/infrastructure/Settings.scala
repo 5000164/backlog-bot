@@ -18,6 +18,7 @@ object Settings {
 trait SettingsType {
   type Projects = Map[ProjectKey, Project]
   val projects: Projects
+  val logChannelId: String
 }
 
 case class Project(
