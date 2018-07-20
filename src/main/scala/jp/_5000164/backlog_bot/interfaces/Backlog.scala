@@ -48,12 +48,16 @@ class Backlog {
 
           case activity if activity.getType == Activity.Type.IssueCommented =>
             val content = activity.getContent.asInstanceOf[IssueCommentedContent]
-            val comment = client.getIssueComment(content.getId, content.getComment.getId)
+            try {
+              val comment = client.getIssueComment(content.getId, content.getComment.getId)
 
-            val postChannel = projects(projectKey).issue.postChannel
-            val message = Message.build(spaceId, projectKey, activity, content, comment)
+              val postChannel = projects(projectKey).issue.postChannel
+              val message = Message.build(spaceId, projectKey, activity, content, comment)
 
-            Some(MessageBundle(postChannel, message))
+              Some(MessageBundle(postChannel, message))
+            } catch {
+              case _: BacklogException => None
+            }
 
           case activity if activity.getType == Activity.Type.WikiCreated =>
             val content = activity.getContent.asInstanceOf[WikiCreatedContent]
